@@ -35,7 +35,7 @@ export const OrderDetailsModal = ({ order, onClose, onUpdate }) => {
             background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(5px)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
         }} onClick={onClose}>
-            <div className="glass-panel" style={{ width: '90%', maxWidth: '800px', maxHeight: '90vh', overflowY: 'auto', padding: '2rem', position: 'relative', background: '#0f172a' }} onClick={e => e.stopPropagation()}>
+            <div className="glass-panel" style={{ width: '95%', maxWidth: '800px', maxHeight: '90vh', overflowY: 'auto', padding: '1.5rem', position: 'relative', background: '#0f172a' }} onClick={e => e.stopPropagation()}>
                 <button onClick={onClose} style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}>
                     <X size={24} />
                 </button>
@@ -96,7 +96,7 @@ export const OrderDetailsModal = ({ order, onClose, onUpdate }) => {
                     </div>
                 )}
 
-                <div style={{ display: 'grid', gap: '2rem', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
+                <div style={{ display: 'grid', gap: '2rem', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
                     <div>
                         <h3 style={{ borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.5rem' }}>Items</h3>
                         <ul style={{ listStyle: 'none', padding: 0 }}>

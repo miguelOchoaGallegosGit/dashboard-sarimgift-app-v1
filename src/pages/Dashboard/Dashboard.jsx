@@ -26,11 +26,11 @@ export const Dashboard = () => {
 
     return (
         <div style={{ padding: '2rem 0' }}>
-            <header style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <header className="dashboard-header">
                 <h1 style={{ fontSize: '2rem', margin: 0, background: 'linear-gradient(to right, #fff, #94a3b8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                     Dashboard de Pedidos
                 </h1>
-                <div className="glass-panel" style={{ padding: '0.5rem 1.5rem', display: 'flex', gap: '2rem' }}>
+                <div className="glass-panel stats-panel">
                     <div style={{ textAlign: 'center' }}>
                         <span style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)' }}>Total Pedidos</span>
                         <span style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>{orders.length}</span>
@@ -44,7 +44,7 @@ export const Dashboard = () => {
                 </div>
             </header>
 
-            <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))' }}>
+            <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))' }}>
                 {orders.map(order => (
                     <div
                         key={order.id}

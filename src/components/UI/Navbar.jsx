@@ -8,18 +8,8 @@ export const Navbar = () => {
     const isActive = (path) => location.pathname === path;
 
     return (
-        <nav className="glass-panel" style={{
-            margin: '1rem auto',
-            padding: '0.8rem 2rem',
-            maxWidth: '1200px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            position: 'sticky',
-            top: '1rem',
-            zIndex: 100
-        }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', fontWeight: 'bold', fontSize: '1.2rem', color: 'var(--text-color)' }}>
+        <nav className="glass-panel navbar">
+            <div className="navbar-brand">
                 <div style={{
                     background: 'linear-gradient(135deg, var(--primary-color), var(--accent-color))',
                     padding: '0.5rem',
@@ -31,7 +21,7 @@ export const Navbar = () => {
                 <span>Sarim<span style={{ color: 'var(--primary-color)' }}>Gift</span></span>
             </div>
 
-            <div style={{ display: 'flex', gap: '1rem' }}>
+            <div className="navbar-actions">
                 <Link to="/" className={`btn ${isActive('/') ? 'btn-primary' : 'btn-secondary'}`}>
                     <PlusCircle size={18} />
                     Nuevo Pedido

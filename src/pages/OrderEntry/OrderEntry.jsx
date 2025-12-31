@@ -146,8 +146,8 @@ export const OrderEntry = () => {
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
                     {items.map((item, index) => (
-                        <div key={item.id} className="glass-panel" style={{ padding: '1rem', background: 'rgba(0,0,0,0.2)', display: 'grid', gridTemplateColumns: '80px 2fr 1fr 1fr 40px', gap: '1rem', alignItems: 'end' }}>
-                            <div>
+                        <div key={item.id} className="glass-panel order-item-grid">
+                            <div className="order-item-qty">
                                 <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Cant.</label>
                                 <input
                                     type="number"
@@ -157,7 +157,7 @@ export const OrderEntry = () => {
                                     onChange={(e) => handleItemChange(item.id, 'quantity', e.target.value)}
                                 />
                             </div>
-                            <div>
+                            <div className="order-item-desc">
                                 <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Descripción</label>
                                 <input
                                     type="text"
@@ -167,7 +167,7 @@ export const OrderEntry = () => {
                                     onChange={(e) => handleItemChange(item.id, 'description', e.target.value)}
                                 />
                             </div>
-                            <div>
+                            <div className="order-item-amount">
                                 <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Monto</label>
                                 <div style={{ position: 'relative' }}>
                                     <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontSize: '0.8rem' }}>S/</span>
@@ -182,7 +182,7 @@ export const OrderEntry = () => {
                                     />
                                 </div>
                             </div>
-                            <div>
+                            <div className="order-item-advance">
                                 <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Adelanto</label>
                                 <div style={{ position: 'relative' }}>
                                     <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontSize: '0.8rem' }}>S/</span>
@@ -200,8 +200,8 @@ export const OrderEntry = () => {
                             <button
                                 type="button"
                                 onClick={() => removeItem(item.id)}
-                                className="btn"
-                                style={{ color: 'var(--danger-color)', padding: '0.5rem', height: '42px', justifySelf: 'center' }}
+                                className="btn order-item-action"
+                                style={{ color: 'var(--danger-color)', padding: '0.5rem', height: '42px' }}
                                 title="Eliminar Item"
                             >
                                 <Trash2 size={20} />
