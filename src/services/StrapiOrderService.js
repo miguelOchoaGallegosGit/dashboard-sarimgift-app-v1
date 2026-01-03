@@ -33,6 +33,7 @@ const transformStrapiOrder = (strapiOrder) => {
             id: item.documentId || item.id.toString(),
             description: item.description,
             quantity: item.quantity,
+            unitPrice: parseFloat(item.unitPrice) || 0,
             amount: parseFloat(item.amount) || 0,
             advance: parseFloat(item.advance) || 0
         }))
@@ -99,7 +100,6 @@ export const StrapiOrderService = {
                 totalAmount, totalAdvance, totalBalance
             });
 
-            console.log('Sending Order Header:', payload);
 
             const orderResponse = await fetch(`${STRAPI_CONFIG.url}${STRAPI_CONFIG.endpoints.orders}`, {
                 method: 'POST',
@@ -109,7 +109,6 @@ export const StrapiOrderService = {
 
             if (!orderResponse.ok) {
                 const err = await orderResponse.json();
-                console.error('Order Header Error:', err);
                 throw new Error('Header creation failed');
             }
 
@@ -118,15 +117,14 @@ export const StrapiOrderService = {
             const orderDocId = createdOrder.documentId;
             const orderNumericId = createdOrder.id;
 
-            console.log('Order Header Created. Numeric ID:', orderNumericId, 'Doc ID:', orderDocId);
 
             if (items.length > 0) {
-                console.log('Creating', items.length, 'items...');
                 const itemPromises = items.map(async (item) => {
                     const itemPayload = {
                         data: {
                             description: item.description,
                             quantity: Number(item.quantity) || 1,
+                            unitPrice: Number(item.unitPrice) || 0,
                             amount: Number(item.amount) || 0,
                             advance: Number(item.advance) || 0,
                             orden: orderDocId // <--- PRUEBA: Usamos DocumentID en lugar de NumericID
@@ -148,7 +146,6 @@ export const StrapiOrderService = {
                 });
 
                 await Promise.all(itemPromises);
-                console.log('All items created successfully');
             }
 
             return await StrapiOrderService.getOrderById(orderDocId);

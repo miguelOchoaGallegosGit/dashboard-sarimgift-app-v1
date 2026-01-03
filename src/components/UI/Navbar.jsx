@@ -24,11 +24,11 @@ export const Navbar = () => {
             <div className="navbar-actions">
                 <Link to="/" className={`btn ${isActive('/') ? 'btn-primary' : 'btn-secondary'}`}>
                     <PlusCircle size={18} />
-                    Nuevo Pedido
+                    <span>Nuevo Pedido</span>
                 </Link>
                 <Link to="/dashboard" className={`btn ${isActive('/dashboard') ? 'btn-primary' : 'btn-secondary'}`}>
                     <LayoutDashboard size={18} />
-                    Dashboard
+                    <span>Dashboard</span>
                 </Link>
             </div>
         </nav>

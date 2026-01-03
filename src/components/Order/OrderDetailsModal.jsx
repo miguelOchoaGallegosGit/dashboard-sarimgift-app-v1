@@ -108,8 +108,9 @@ export const OrderDetailsModal = ({ order, onClose, onUpdate }) => {
                                 <li key={item.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.8rem 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                                     <div>
                                         <div style={{ fontWeight: 'bold' }}>{item.quantity} x {item.description}</div>
+                                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>P. Unit: S/ {item.unitPrice.toFixed(2)}</div>
                                     </div>
-                                    <div style={{ color: 'var(--text-muted)' }}>S/ {item.amount.toFixed(2)}</div>
+                                    <div style={{ color: 'var(--primary-color)', fontWeight: '700' }}>S/ {item.amount.toFixed(2)}</div>
                                 </li>
                             ))}
                         </ul>
