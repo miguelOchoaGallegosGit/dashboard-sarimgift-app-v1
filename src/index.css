@@ -172,102 +172,62 @@ body {
 }
 
 
-.dashboard-header {
-  margin-bottom: 2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+/* Dashboards & Forms Layouts */
+.search-filter-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  align-items: end;
 }
 
-.stats-panel {
-  padding: 0.5rem 1.5rem;
+.filter-group {
   display: flex;
-  gap: 2rem;
+  flex-direction: column;
+  gap: 0.6rem;
+  width: 100%;
 }
 
+.order-header-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: 2fr 1fr 1fr;
+}
 
-@media (max-width: 768px) {
-  .navbar {
-    flex-direction: column;
-    padding: 0.75rem;
-    margin: 0.5rem;
-  }
-
-  .navbar-actions {
-    width: 100%;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
-  .order-item-grid {
+@media (max-width: 900px) {
+  .order-header-grid {
     grid-template-columns: 1fr 1fr;
-    grid-template-areas:
-      "desc desc"
-      "qty amount"
-      "advance action";
-    gap: 0.8rem;
   }
+}
 
-  .order-item-qty {
-    grid-area: qty;
-  }
-
-  .order-item-desc {
-    grid-area: desc;
-  }
-
-  .order-item-amount {
-    grid-area: amount;
-  }
-
-  .order-item-advance {
-    grid-area: advance;
-  }
-
-  .order-item-action {
-    grid-area: action;
-    justify-self: end;
-  }
-
-  .dashboard-header {
-    flex-direction: column;
-    align-items: flex-start;
+@media (max-width: 600px) {
+  .search-filter-grid {
+    grid-template-columns: 1fr;
     gap: 1rem;
   }
 
-  .stats-panel {
-    width: 100%;
-    justify-content: space-around;
-  }
-}
-
-@media (max-width: 400px) {
-  .glass-panel {
-    padding: 1rem !important;
-  }
-
-  .navbar {
-    padding: 0.5rem;
-    margin: 0.25rem;
-  }
-
-  .navbar-brand {
-    font-size: 1rem;
+  .order-header-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
   }
 
   .btn {
-    padding: 0.6rem 1rem;
-    font-size: 0.85rem;
+    width: 100%;
+    justify-content: center;
   }
+}
 
-  .order-item-grid {
-    padding: 0.75rem;
-    gap: 0.6rem;
-  }
+.btn-icon {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-speed);
+}
 
-  .stats-panel {
-    padding: 0.5rem 1rem;
-    gap: 1rem;
-    font-size: 0.9rem;
-  }
+.btn-icon:hover {
+  filter: brightness(1.2);
 }

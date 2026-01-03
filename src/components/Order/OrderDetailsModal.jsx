@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { X, CheckCircle, Truck, CreditCard, Play } from 'lucide-react';
-import { OrderService } from '../../services/OrderService';
+import { OrderService } from '../../services';
 
 export const OrderDetailsModal = ({ order, onClose, onUpdate }) => {
     const [currentOrder, setCurrentOrder] = useState(order);
@@ -11,20 +11,24 @@ export const OrderDetailsModal = ({ order, onClose, onUpdate }) => {
 
     if (!currentOrder) return null;
 
-    const handleStatusChange = (key, value) => {
-        // If we are starting the process
-        if (key === 'status' && value === 'En Proceso') {
-            const updated = OrderService.updateOrder(currentOrder.id, { status: 'En Proceso' });
+    const handleStatusChange = async (key, value) => {
+        try {
+            // If we are starting the process
+            if (key === 'status' && value === 'En Proceso') {
+                const updated = await OrderService.updateOrder(currentOrder.id, { status: 'En Proceso' });
+                setCurrentOrder(updated);
+                onUpdate(updated);
+                return;
+            }
+
+            // If we are toggling flags
+            const updates = { [key]: value };
+            const updated = await OrderService.updateOrder(currentOrder.id, updates);
             setCurrentOrder(updated);
             onUpdate(updated);
-            return;
+        } catch (error) {
+            console.error('Error updating order status:', error);
         }
-
-        // If we are toggling flags
-        const updates = { [key]: value };
-        const updated = OrderService.updateOrder(currentOrder.id, updates);
-        setCurrentOrder(updated);
-        onUpdate(updated);
     };
 
     const isClosed = currentOrder.status === 'Cerrado';
