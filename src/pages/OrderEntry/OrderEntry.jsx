@@ -16,6 +16,7 @@ export const OrderEntry = () => {
     ]);
 
     const [notification, setNotification] = useState(null);
+    const [isSaving, setIsSaving] = useState(false);
 
     const handleHeadChange = (e) => {
         const { name, value } = e.target;
@@ -54,11 +55,14 @@ export const OrderEntry = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (isSaving) return;
+
         if (!formData.customerName || !formData.deliveryDate) {
             setNotification({ type: 'error', message: 'Por favor complete los datos del cliente y entrega.' });
             return;
         }
 
+        setIsSaving(true);
         try {
             await OrderService.createOrder({
                 ...formData,
@@ -75,6 +79,7 @@ export const OrderEntry = () => {
         } catch (error) {
             console.error(error);
             setNotification({ type: 'error', message: 'Hubo un error al guardar en Strapi.' });
+            setIsSaving(false);
         }
     };
 
@@ -253,8 +258,24 @@ export const OrderEntry = () => {
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <button type="submit" className="btn btn-primary" style={{ padding: '1rem 4rem', fontSize: '1.1rem', borderRadius: 'var(--radius-lg)' }}>
-                        <Save size={22} style={{ marginRight: '10px' }} /> Guardar</button>
+                    <button
+                        type="submit"
+                        className="btn btn-primary"
+                        disabled={isSaving}
+                        style={{ padding: '1rem 4rem', fontSize: '1.1rem', borderRadius: 'var(--radius-lg)' }}
+                    >
+                        {isSaving ? (
+                            <>
+                                <div className="spinner" style={{ marginRight: '10px' }}></div>
+                                Guardando...
+                            </>
+                        ) : (
+                            <>
+                                <Save size={22} style={{ marginRight: '10px' }} />
+                                Guardar
+                            </>
+                        )}
+                    </button>
                 </div>
             </form >
         </div >

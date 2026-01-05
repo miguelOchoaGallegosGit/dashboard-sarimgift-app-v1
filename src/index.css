@@ -157,6 +157,13 @@ body {
   color: var(--text-color);
 }
 
+.navbar-logo {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
 .navbar-actions {
   display: flex;
   gap: 0.5rem;
@@ -165,6 +172,10 @@ body {
 @media (max-width: 600px) {
   .navbar-brand span {
     display: none;
+  }
+
+  .navbar-logo {
+    height: 32px;
   }
 
   .navbar {
@@ -288,4 +299,26 @@ body {
 
 .btn-icon:hover {
   filter: brightness(1.2);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }

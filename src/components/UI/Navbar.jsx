@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, PlusCircle, Package } from 'lucide-react';
+import { LayoutDashboard, PlusCircle } from 'lucide-react';
 
 export const Navbar = () => {
     const location = useLocation();
@@ -10,14 +10,7 @@ export const Navbar = () => {
     return (
         <nav className="glass-panel navbar">
             <div className="navbar-brand">
-                <div style={{
-                    background: 'linear-gradient(135deg, var(--primary-color), var(--accent-color))',
-                    padding: '0.5rem',
-                    borderRadius: '8px',
-                    display: 'flex'
-                }}>
-                    <Package size={24} color="white" />
-                </div>
+                <img src="/logo.png" alt="SarimGift Logo" className="navbar-logo" />
                 <span>Sarim<span style={{ color: 'var(--primary-color)' }}>Gift</span></span>
             </div>
 
