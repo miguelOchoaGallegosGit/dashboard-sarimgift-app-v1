@@ -9,6 +9,22 @@ export const OrderDetailsModal = ({ order, onClose, onUpdate }) => {
         setCurrentOrder(order);
     }, [order]);
 
+    // Cerrar modal con tecla ESC
+    useEffect(() => {
+        const handleEscKey = (event) => {
+            if (event.key === 'Escape') {
+                onClose();
+            }
+        };
+
+        document.addEventListener('keydown', handleEscKey);
+
+        // Cleanup: remover el listener cuando el componente se desmonte
+        return () => {
+            document.removeEventListener('keydown', handleEscKey);
+        };
+    }, [onClose]);
+
     if (!currentOrder) return null;
 
     const handleStatusChange = async (key, value) => {

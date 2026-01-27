@@ -35,7 +35,27 @@ export const Dashboard = () => {
     const filteredOrders = orders.filter(order => {
         const matchSearch = (order.customerName || '').toLowerCase().includes(filters.search.toLowerCase()) ||
             (order.orderNumber || '').toLowerCase().includes(filters.search.toLowerCase());
-        const matchStatus = filters.status === '' || order.status === filters.status;
+
+        // Lógica de filtrado por estado
+        let matchStatus;
+        if (filters.status === '') {
+            // Si no hay filtro, mostrar todas las órdenes
+            matchStatus = true;
+        } else if (filters.status === 'Entregado') {
+            // Filtrar por órdenes entregadas (isDelivered = true) pero NO cerradas
+            matchStatus = order.isDelivered === true && order.status !== 'Cerrado';
+        } else if (filters.status === 'Pagado') {
+            // Filtrar por órdenes pagadas (isPaid = true) pero NO cerradas
+            matchStatus = order.isPaid === true && order.status !== 'Cerrado';
+        } else if (filters.status === 'Cerrado') {
+            // Filtrar por órdenes cerradas (isPaid = true y isDelivered = true)
+            matchStatus = order.isPaid === true;
+        } else {
+            // Para "Recibido" y "En Proceso", comparar con status (case-insensitive)
+            const orderStatus = (order.status || '').toLowerCase();
+            const filterStatus = filters.status.toLowerCase();
+            matchStatus = orderStatus === filterStatus;
+        }
 
         const orderDate = new Date(order.date).getTime();
         const matchStart = !filters.startDate || orderDate >= new Date(filters.startDate).getTime();
@@ -101,6 +121,7 @@ export const Dashboard = () => {
                             <option value="Recibido">Recibido</option>
                             <option value="En Proceso">En Proceso</option>
                             <option value="Entregado">Entregado</option>
+                            <option value="Pagado">Pagado</option>
                             <option value="Cerrado">Cerrado</option>
                         </select>
                     </div>

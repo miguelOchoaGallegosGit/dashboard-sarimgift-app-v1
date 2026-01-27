@@ -11,7 +11,6 @@ export const Navbar = () => {
         <nav className="glass-panel navbar">
             <div className="navbar-brand">
                 <img src="/logo.png" alt="SarimGift Logo" className="navbar-logo" />
-                <span>Sarim<span style={{ color: 'var(--primary-color)' }}>Gift</span></span>
             </div>
 
             <div className="navbar-actions">
