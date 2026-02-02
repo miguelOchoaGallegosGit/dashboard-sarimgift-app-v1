@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { OrderService } from '../../services';
-import { ShoppingBag, Calendar, User, ChevronRight } from 'lucide-react';
+import { ShoppingBag, Calendar, User, ChevronRight, Wallet } from 'lucide-react';
 import { OrderDetailsModal } from '../../components/Order/OrderDetailsModal';
 
 export const Dashboard = () => {
@@ -63,6 +63,9 @@ export const Dashboard = () => {
 
         return matchSearch && matchStatus && matchStart && matchEnd;
     });
+
+    const totalAmountFiltered = filteredOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
+    const isFiltered = filters.search !== '' || filters.status !== '' || filters.startDate !== '' || filters.endDate !== '';
 
     const getStatusColor = (status) => {
         switch (status) {
@@ -157,6 +160,28 @@ export const Dashboard = () => {
                     </button>
                 </div>
             </div>
+
+            {isFiltered && filteredOrders.length > 0 && (
+                <div className="disclaimer-banner">
+                    <div className="disclaimer-content">
+                        <div style={{ padding: '10px', borderRadius: '12px', background: 'rgba(99, 102, 241, 0.2)', color: 'var(--primary-color)' }}>
+                            <Wallet size={24} />
+                        </div>
+                        <div>
+                            <h4 style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                Total Acumulado (Filtro)
+                            </h4>
+                            <p style={{ margin: 0, fontSize: '0.85rem' }}>
+                                Suma de los <strong style={{ color: '#fff' }}>{filteredOrders.length}</strong> pedidos encontrados
+                            </p>
+                        </div>
+                    </div>
+                    <div className="total-amount-badge">
+                        <span style={{ fontSize: '1rem', color: 'var(--text-muted)', fontWeight: '400', marginRight: '8px' }}>S/</span>
+                        {totalAmountFiltered.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </div>
+                </div>
+            )}
 
             <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
                 {filteredOrders.map(order => (
