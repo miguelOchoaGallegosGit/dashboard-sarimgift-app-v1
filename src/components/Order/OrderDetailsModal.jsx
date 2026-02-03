@@ -47,7 +47,7 @@ export const OrderDetailsModal = ({ order, onClose, onUpdate }) => {
         }
     };
 
-    const isClosed = currentOrder.status === 'Cerrado';
+    const isClosed = currentOrder.status === 'Cerrado y Pagado';
 
     return (
         <div style={{

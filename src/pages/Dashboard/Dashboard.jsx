@@ -39,19 +39,19 @@ export const Dashboard = () => {
         // Lógica de filtrado por estado
         let matchStatus;
         if (filters.status === '') {
-            // Si no hay filtro, mostrar todas las órdenes
             matchStatus = true;
         } else if (filters.status === 'Entregado') {
-            // Filtrar por órdenes entregadas (isDelivered = true) pero NO cerradas
-            matchStatus = order.isDelivered === true && order.status !== 'Cerrado';
-        } else if (filters.status === 'Pagado') {
-            // Filtrar por órdenes pagadas (isPaid = true) pero NO cerradas
-            matchStatus = order.isPaid === true && order.status !== 'Cerrado';
-        } else if (filters.status === 'Cerrado') {
-            // Filtrar por órdenes cerradas (isPaid = true y isDelivered = true)
-            matchStatus = order.isPaid === true;
+            // "Entregado": tiene entrega pero NO está pagado aún
+            matchStatus = order.isDelivered === true && order.isPaid === false;
+        } else if (filters.status === 'Cerrado y Pagado') {
+            // "Cerrado y Pagado": tiene ambos checks
+            matchStatus = order.isDelivered === true && order.isPaid === true;
+        } else if (filters.status === 'En Proceso') {
+            // "En Proceso" puro: sin entrega ni pago marcado
+            matchStatus = order.status === 'En Proceso' && !order.isDelivered && !order.isPaid;
+        } else if (filters.status === 'Recibido') {
+            matchStatus = order.status === 'Recibido' && !order.isDelivered && !order.isPaid;
         } else {
-            // Para "Recibido" y "En Proceso", comparar con status (case-insensitive)
             const orderStatus = (order.status || '').toLowerCase();
             const filterStatus = filters.status.toLowerCase();
             matchStatus = orderStatus === filterStatus;
@@ -68,8 +68,8 @@ export const Dashboard = () => {
     const isFiltered = filters.search !== '' || filters.status !== '' || filters.startDate !== '' || filters.endDate !== '';
 
     const getStatusColor = (status) => {
+        if (status === 'Cerrado' || status === 'Cerrado y Pagado') return 'var(--success-color)';
         switch (status) {
-            case 'Cerrado': return 'var(--success-color)';
             case 'Entregado': return 'var(--primary-color)';
             case 'En Proceso': return 'var(--warning-color)';
             default: return 'var(--text-muted)';
@@ -91,7 +91,7 @@ export const Dashboard = () => {
                     <div style={{ textAlign: 'center' }}>
                         <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Pendientes</span>
                         <span style={{ fontWeight: '800', fontSize: '1.4rem', color: 'var(--warning-color)' }}>
-                            {filteredOrders.filter(o => o.status !== 'Cerrado').length}
+                            {filteredOrders.filter(o => o.status !== 'Cerrado' && o.status !== 'Cerrado y Pagado').length}
                         </span>
                     </div>
                 </div>
@@ -124,8 +124,7 @@ export const Dashboard = () => {
                             <option value="Recibido">Recibido</option>
                             <option value="En Proceso">En Proceso</option>
                             <option value="Entregado">Entregado</option>
-                            <option value="Pagado">Pagado</option>
-                            <option value="Cerrado">Cerrado</option>
+                            <option value="Cerrado y Pagado">Cerrado y Pagado</option>
                         </select>
                     </div>
 
@@ -208,7 +207,7 @@ export const Dashboard = () => {
                                 color: getStatusColor(order.status),
                                 border: `1px solid ${getStatusColor(order.status)}30`
                             }}>
-                                {order.status}
+                                {(order.status === 'Cerrado' || order.status === 'Cerrado y Pagado') ? 'Cerrado y Pagado' : order.status}
                             </span>
                         </div>
 
