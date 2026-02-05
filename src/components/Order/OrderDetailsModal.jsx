@@ -47,7 +47,7 @@ export const OrderDetailsModal = ({ order, onClose, onUpdate }) => {
         }
     };
 
-    const isClosed = currentOrder.status === 'Cerrado y Pagado';
+    const isClosed = currentOrder.status === 'Cerrado' || currentOrder.status === 'Cerrado y Pagado';
 
     return (
         <div style={{
@@ -67,7 +67,7 @@ export const OrderDetailsModal = ({ order, onClose, onUpdate }) => {
                             <p style={{ color: 'var(--text-muted)', margin: 0 }}>{currentOrder.date} • {currentOrder.customerName}</p>
                         </div>
                         <div style={{ padding: '0.5rem 1rem', borderRadius: '20px', background: isClosed ? 'var(--success-color)' : 'var(--primary-color)', fontWeight: 'bold' }}>
-                            {currentOrder.status}
+                            {isClosed ? 'Cerrado y Pagado' : currentOrder.status}
                         </div>
                     </div>
                 </header>

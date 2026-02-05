@@ -47,7 +47,7 @@ const transformToStrapiPayload = (order) => {
             date: order.date,
             customerName: order.customerName,
             deliveryDate: order.deliveryDate,
-            statusOrden: order.status || 'Recibido',
+            statusOrden: (order.status === 'Cerrado y Pagado') ? 'Cerrado' : (order.status || 'Recibido'),
             isDelivered: !!order.isDelivered,
             isPaid: !!order.isPaid,
             totalAmount: Number(order.totalAmount) || 0,
@@ -165,8 +165,8 @@ export const StrapiOrderService = {
             merged.totalAdvance = items.reduce((sum, item) => sum + (Number(item.advance) || 0), 0);
             merged.totalBalance = merged.totalAmount - merged.totalAdvance;
 
-            if (merged.isDelivered && merged.isPaid) merged.status = 'Cerrado y Pagado';
-            else if (merged.status === 'Cerrado y Pagado' && (!merged.isDelivered || !merged.isPaid)) merged.status = 'En Proceso';
+            if (merged.isDelivered && merged.isPaid) merged.status = 'Cerrado';
+            else if (merged.status === 'Cerrado' && (!merged.isDelivered || !merged.isPaid)) merged.status = 'En Proceso';
 
             const response = await fetch(`${STRAPI_CONFIG.url}${STRAPI_CONFIG.endpoints.orders}/${id}`, {
                 method: 'PUT',
