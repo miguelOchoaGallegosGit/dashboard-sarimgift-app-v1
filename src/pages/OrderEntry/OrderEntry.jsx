@@ -78,7 +78,7 @@ export const OrderEntry = () => {
             setTimeout(() => navigate('/dashboard'), 1500);
         } catch (error) {
             console.error(error);
-            setNotification({ type: 'error', message: 'Hubo un error al guardar en Strapi.' });
+            setNotification({ type: 'error', message: error.message || 'Hubo un error al guardar en Strapi.' });
             setIsSaving(false);
         }
     };

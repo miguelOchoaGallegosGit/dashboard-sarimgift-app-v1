@@ -1,6 +1,14 @@
 import { STRAPI_CONFIG, getAuthHeaders } from '../config/strapi';
 
-const generateOrderNumber = (count) => `PED-${String(count + 1).padStart(4, '0')}`;
+const generateOrderNumber = (orders) => {
+    if (!orders || orders.length === 0) return 'PED-0001';
+    const numbers = orders.map(o => {
+        const match = (o.orderNumber || '').match(/PED-(\d+)/);
+        return match ? parseInt(match[1], 10) : 0;
+    });
+    const max = Math.max(...numbers, 0);
+    return `PED-${String(max + 1).padStart(4, '0')}`;
+};
 
 /**
  * Transform Strapi response to our Order format
@@ -92,7 +100,7 @@ export const StrapiOrderService = {
             const totalBalance = totalAmount - totalAdvance;
 
             const currentOrders = await StrapiOrderService.getOrders();
-            const orderNumber = generateOrderNumber(currentOrders.length);
+            const orderNumber = generateOrderNumber(currentOrders);
 
             const payload = transformToStrapiPayload({
                 ...orderData,
@@ -109,7 +117,8 @@ export const StrapiOrderService = {
 
             if (!orderResponse.ok) {
                 const err = await orderResponse.json();
-                throw new Error('Header creation failed');
+                console.error('STRAPI ORDER ERROR:', err);
+                throw new Error(`Error al crear cabecera: ${JSON.stringify(err.error?.message || err)}`);
             }
 
             const orderResult = await orderResponse.json();
