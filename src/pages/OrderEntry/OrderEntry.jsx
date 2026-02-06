@@ -75,10 +75,13 @@ export const OrderEntry = () => {
                 }))
             });
             setNotification({ type: 'success', message: '¡Pedido registrado correctamente!' });
-            setTimeout(() => navigate('/dashboard'), 1500);
+            setTimeout(() => {
+                setIsSaving(false);
+                navigate('/dashboard');
+            }, 1500);
         } catch (error) {
             console.error(error);
-            setNotification({ type: 'error', message: error.message || 'Hubo un error al guardar en Strapi.' });
+            setNotification({ type: 'error', message: error.message || 'Hubo un error al guardar en la Base de Datos.' });
             setIsSaving(false);
         }
     };
@@ -278,6 +281,13 @@ export const OrderEntry = () => {
                     </button>
                 </div>
             </form >
+
+            {isSaving && (
+                <div className="loading-overlay">
+                    <div className="spinner"></div>
+                    <div className="loading-text">Guardando Pedido...</div>
+                </div>
+            )}
         </div >
     );
 };

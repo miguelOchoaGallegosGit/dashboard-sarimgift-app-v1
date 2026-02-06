@@ -4,6 +4,7 @@ import { OrderService } from '../../services';
 
 export const OrderDetailsModal = ({ order, onClose, onUpdate }) => {
     const [currentOrder, setCurrentOrder] = useState(order);
+    const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
         setCurrentOrder(order);
@@ -28,12 +29,14 @@ export const OrderDetailsModal = ({ order, onClose, onUpdate }) => {
     if (!currentOrder) return null;
 
     const handleStatusChange = async (key, value) => {
+        setIsSaving(true);
         try {
             // If we are starting the process
             if (key === 'status' && value === 'En Proceso') {
                 const updated = await OrderService.updateOrder(currentOrder.id, { status: 'En Proceso' });
                 setCurrentOrder(updated);
                 onUpdate(updated);
+                setIsSaving(false);
                 return;
             }
 
@@ -44,6 +47,8 @@ export const OrderDetailsModal = ({ order, onClose, onUpdate }) => {
             onUpdate(updated);
         } catch (error) {
             console.error('Error updating order status:', error);
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -154,6 +159,12 @@ export const OrderDetailsModal = ({ order, onClose, onUpdate }) => {
                     </div>
                 </div>
 
+                {isSaving && (
+                    <div className="loading-overlay">
+                        <div className="spinner"></div>
+                        <div className="loading-text">Actualizando...</div>
+                    </div>
+                )}
             </div>
         </div>
     );

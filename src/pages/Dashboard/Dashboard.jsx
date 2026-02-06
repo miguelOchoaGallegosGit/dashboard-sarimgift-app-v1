@@ -12,18 +12,22 @@ export const Dashboard = () => {
         startDate: '',
         endDate: ''
     });
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         loadOrders();
     }, []);
 
     const loadOrders = async () => {
+        setIsLoading(true);
         try {
             const data = await OrderService.getOrders();
             setOrders(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error('Error loading orders:', error);
             setOrders([]);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -257,6 +261,13 @@ export const Dashboard = () => {
                         setOrders(prev => prev.map(o => o.id === updated.id ? updated : o));
                     }}
                 />
+            )}
+
+            {isLoading && (
+                <div className="loading-overlay">
+                    <div className="spinner"></div>
+                    <div className="loading-text">Cargando Pedidos...</div>
+                </div>
             )}
         </div>
     );
