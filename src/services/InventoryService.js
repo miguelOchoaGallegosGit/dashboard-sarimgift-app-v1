@@ -26,6 +26,7 @@ const transformSupabaseItem = (dbItem) => {
         description: dbItem.description,
         category: dbItem.category,
         quantity: parseInt(dbItem.quantity) || 0,
+        cost: parseFloat(dbItem.cost) || 0,
         tipo: dbItem.tipo,
         material: dbItem.material,
         modelo: dbItem.modelo,
@@ -135,6 +136,7 @@ export const InventoryService = {
                     description: itemData.description || null,
                     category: itemData.category,
                     quantity: quantity,
+                    cost: parseFloat(itemData.cost) || 0,
                     tipo: itemData.tipo || null,
                     material: itemData.material || null,
                     modelo: itemData.modelo || null,
@@ -196,6 +198,13 @@ export const InventoryService = {
                     throw new Error('La cantidad debe estar entre 0 y 1000');
                 }
                 updateData.quantity = quantity;
+            }
+            if (updates.cost !== undefined) {
+                const cost = parseFloat(updates.cost);
+                if (isNaN(cost) || cost < 0) {
+                    throw new Error('El costo debe ser mayor o igual a 0');
+                }
+                updateData.cost = cost;
             }
             if (updates.tipo !== undefined) updateData.tipo = updates.tipo;
             if (updates.material !== undefined) updateData.material = updates.material;

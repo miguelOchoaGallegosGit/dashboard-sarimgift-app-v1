@@ -7,6 +7,7 @@ export const InventoryGrid = ({ items, onUpdateStock, sorting, onSortChange }) =
         name: true,
         category: true,
         quantity: true,
+        cost: true,
         tipo: true,
         material: true,
         modelo: false,
@@ -20,6 +21,7 @@ export const InventoryGrid = ({ items, onUpdateStock, sorting, onSortChange }) =
         { key: 'name', label: 'Nombre', alwaysVisible: false },
         { key: 'category', label: 'Categoría', alwaysVisible: false },
         { key: 'quantity', label: 'Cantidad', alwaysVisible: false },
+        { key: 'cost', label: 'Costo', alwaysVisible: false },
         { key: 'tipo', label: 'Tipo', alwaysVisible: false },
         { key: 'material', label: 'Material', alwaysVisible: false },
         { key: 'modelo', label: 'Modelo', alwaysVisible: false },
@@ -157,6 +159,13 @@ export const InventoryGrid = ({ items, onUpdateStock, sorting, onSortChange }) =
                                             </span>
                                         </td>
                                     )}
+                                    {visibleColumns.cost && (
+                                        <td>
+                                            <span style={{ fontWeight: '600', color: 'var(--success-color)' }}>
+                                                S/ {item.cost.toFixed(2)}
+                                            </span>
+                                        </td>
+                                    )}
                                     {visibleColumns.tipo && (
                                         <td>{item.tipo || '-'}</td>
                                     )}
@@ -226,6 +235,10 @@ export const InventoryGrid = ({ items, onUpdateStock, sorting, onSortChange }) =
                                     }}>
                                         {item.quantity}
                                     </span>
+                                </div>
+                                <div>
+                                    <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.75rem' }}>Costo</span>
+                                    <strong style={{ fontSize: '1rem', color: 'var(--success-color)' }}>S/ {item.cost.toFixed(2)}</strong>
                                 </div>
                                 {item.tipo && (
                                     <div>

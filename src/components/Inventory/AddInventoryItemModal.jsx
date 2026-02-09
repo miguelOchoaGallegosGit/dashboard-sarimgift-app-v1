@@ -7,6 +7,7 @@ export const AddInventoryItemModal = ({ onClose, onSave }) => {
         description: '',
         category: '',
         quantity: 0,
+        cost: 0,
         tipo: '',
         material: '',
         modelo: '',
@@ -56,6 +57,11 @@ export const AddInventoryItemModal = ({ onClose, onSave }) => {
         const quantity = parseInt(formData.quantity);
         if (isNaN(quantity) || quantity < 0 || quantity > 1000) {
             newErrors.quantity = 'La cantidad debe estar entre 0 y 1000';
+        }
+
+        const cost = parseFloat(formData.cost);
+        if (isNaN(cost) || cost < 0) {
+            newErrors.cost = 'El costo debe ser mayor o igual a 0';
         }
 
         setErrors(newErrors);
@@ -167,6 +173,28 @@ export const AddInventoryItemModal = ({ onClose, onSave }) => {
                                 />
                                 {errors.quantity && <span style={{ color: 'var(--danger-color)', fontSize: '0.8rem' }}>{errors.quantity}</span>}
                             </div>
+                        </div>
+
+                        {/* Costo */}
+                        <div className="filter-group">
+                            <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>
+                                Costo Unitario *
+                            </label>
+                            <input
+                                type="number"
+                                name="cost"
+                                className="input-field"
+                                placeholder="0.00"
+                                min="0"
+                                step="0.01"
+                                value={formData.cost}
+                                onChange={handleChange}
+                                required
+                            />
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                                Costo de adquisición del producto
+                            </span>
+                            {errors.cost && <span style={{ color: 'var(--danger-color)', fontSize: '0.8rem' }}>{errors.cost}</span>}
                         </div>
 
                         {/* Precio, Talla, Color */}

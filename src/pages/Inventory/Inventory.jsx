@@ -78,12 +78,12 @@ export const Inventory = () => {
         }
     };
 
-    const handleUpdateStock = async (itemId, newQuantity) => {
+    const handleUpdateStock = async (itemId, updates) => {
         try {
-            await InventoryService.updateInventoryStock(itemId, newQuantity);
+            await InventoryService.updateInventoryItem(itemId, updates);
             await loadInventory();
         } catch (error) {
-            console.error('Error updating stock:', error);
+            console.error('Error updating item:', error);
             throw error;
         }
     };

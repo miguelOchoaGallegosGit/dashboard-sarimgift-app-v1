@@ -3,6 +3,7 @@ import { X, AlertTriangle, Edit3 } from 'lucide-react';
 
 export const UpdateStockModal = ({ item, onClose, onUpdate }) => {
     const [newQuantity, setNewQuantity] = useState(item.quantity);
+    const [newCost, setNewCost] = useState(item.cost || 0);
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
@@ -10,6 +11,12 @@ export const UpdateStockModal = ({ item, onClose, onUpdate }) => {
     const handleQuantityChange = (e) => {
         const value = e.target.value;
         setNewQuantity(value);
+        setError('');
+    };
+
+    const handleCostChange = (e) => {
+        const value = e.target.value;
+        setNewCost(value);
         setError('');
     };
 
@@ -31,10 +38,16 @@ export const UpdateStockModal = ({ item, onClose, onUpdate }) => {
         e.preventDefault();
 
         const quantity = parseInt(newQuantity);
+        const cost = parseFloat(newCost);
 
         // Validación
         if (isNaN(quantity) || quantity < 0 || quantity > 1000) {
             setError('La cantidad debe estar entre 0 y 1000');
+            return;
+        }
+
+        if (isNaN(cost) || cost < 0) {
+            setError('El costo debe ser mayor o igual a 0');
             return;
         }
 
@@ -46,11 +59,11 @@ export const UpdateStockModal = ({ item, onClose, onUpdate }) => {
 
         setIsSubmitting(true);
         try {
-            await onUpdate(item.id, quantity);
+            await onUpdate(item.id, { quantity, cost });
             onClose();
         } catch (err) {
-            console.error('Error updating stock:', err);
-            setError(err.message || 'Error al actualizar el stock');
+            console.error('Error updating item:', err);
+            setError(err.message || 'Error al actualizar el item');
         } finally {
             setIsSubmitting(false);
         }
@@ -59,6 +72,7 @@ export const UpdateStockModal = ({ item, onClose, onUpdate }) => {
     const handleCancelConfirmation = () => {
         setShowConfirmation(false);
         setNewQuantity(item.quantity);
+        setNewCost(item.cost || 0);
     };
 
     if (showConfirmation) {
@@ -125,7 +139,7 @@ export const UpdateStockModal = ({ item, onClose, onUpdate }) => {
                         <div style={{ padding: '8px', borderRadius: '8px', background: 'rgba(99, 102, 241, 0.2)' }}>
                             <Edit3 size={24} color="var(--primary-color)" />
                         </div>
-                        <h2 style={{ margin: 0, fontSize: '1.5rem' }}>Actualizar Stock</h2>
+                        <h2 style={{ margin: 0, fontSize: '1.5rem' }}>Actualizar Stock y Costo</h2>
                     </div>
                     <button onClick={onClose} className="btn-icon" style={{ background: 'rgba(255, 255, 255, 0.05)' }}>
                         <X size={20} />
@@ -170,6 +184,27 @@ export const UpdateStockModal = ({ item, onClose, onUpdate }) => {
                         {error && <span style={{ color: 'var(--danger-color)', fontSize: '0.8rem', marginTop: '0.5rem' }}>{error}</span>}
                     </div>
 
+                    {/* Campo de nuevo costo */}
+                    <div className="filter-group">
+                        <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>
+                            Nuevo Costo Unitario
+                        </label>
+                        <input
+                            type="number"
+                            className="input-field"
+                            placeholder="Ingrese el nuevo costo"
+                            min="0"
+                            step="0.01"
+                            value={newCost}
+                            onChange={handleCostChange}
+                            required
+                            style={{ fontSize: '1.2rem', fontWeight: '600' }}
+                        />
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                            Costo de adquisición del producto
+                        </span>
+                    </div>
+
                     {/* Advertencia si el nuevo stock es bajo */}
                     {parseInt(newQuantity) > 0 && parseInt(newQuantity) < 5 && (
                         <div style={{
@@ -212,7 +247,7 @@ export const UpdateStockModal = ({ item, onClose, onUpdate }) => {
                                     Actualizando...
                                 </>
                             ) : (
-                                'Actualizar Stock'
+                                'Actualizar'
                             )}
                         </button>
                     </div>
