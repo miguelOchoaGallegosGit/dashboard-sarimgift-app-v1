@@ -3,16 +3,15 @@ import { X, Package } from 'lucide-react';
 
 export const AddInventoryItemModal = ({ onClose, onSave }) => {
     const [formData, setFormData] = useState({
-        name: '',
-        description: '',
         category: '',
         quantity: 0,
-        cost: 0,
+        unit_price: 0,
         tipo: '',
         material: '',
         modelo: '',
         diseno: '',
-        notes: ''
+        size: '',
+        color: ''
     });
 
     const [errors, setErrors] = useState({});
@@ -46,10 +45,6 @@ export const AddInventoryItemModal = ({ onClose, onSave }) => {
     const validate = () => {
         const newErrors = {};
 
-        if (!formData.name.trim()) {
-            newErrors.name = 'El nombre es requerido';
-        }
-
         if (!formData.category) {
             newErrors.category = 'La categoría es requerida';
         }
@@ -59,9 +54,9 @@ export const AddInventoryItemModal = ({ onClose, onSave }) => {
             newErrors.quantity = 'La cantidad debe estar entre 0 y 1000';
         }
 
-        const cost = parseFloat(formData.cost);
-        if (isNaN(cost) || cost < 0) {
-            newErrors.cost = 'El costo debe ser mayor o igual a 0';
+        const unit_price = parseFloat(formData.unit_price);
+        if (isNaN(unit_price) || unit_price < 0) {
+            newErrors.unit_price = 'El precio debe ser mayor o igual a 0';
         }
 
         setErrors(newErrors);
@@ -104,23 +99,6 @@ export const AddInventoryItemModal = ({ onClose, onSave }) => {
                     <div className="inventory-form-grid">
                         {/* Column 1 */}
                         <div className="form-column">
-                            {/* Nombre */}
-                            <div className="filter-group">
-                                <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>
-                                    Nombre del Producto *
-                                </label>
-                                <input
-                                    type="text"
-                                    name="name"
-                                    className="input-field"
-                                    placeholder="Ej: Polo Básico"
-                                    value={formData.name}
-                                    onChange={handleChange}
-                                    required
-                                />
-                                {errors.name && <span style={{ color: 'var(--danger-color)', fontSize: '0.8rem' }}>{errors.name}</span>}
-                            </div>
-
                             {/* Categoría */}
                             <div className="filter-group">
                                 <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>
@@ -193,42 +171,26 @@ export const AddInventoryItemModal = ({ onClose, onSave }) => {
 
                         {/* Column 2 */}
                         <div className="form-column">
-                            {/* Descripción */}
+                            {/* Precio Unitario */}
                             <div className="filter-group">
                                 <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>
-                                    Descripción
-                                </label>
-                                <textarea
-                                    name="description"
-                                    className="input-field"
-                                    placeholder="Descripción detallada del producto..."
-                                    value={formData.description}
-                                    onChange={handleChange}
-                                    rows={3}
-                                    style={{ resize: 'vertical' }}
-                                />
-                            </div>
-
-                            {/* Costo */}
-                            <div className="filter-group">
-                                <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>
-                                    Costo Unitario *
+                                    Precio Unitario *
                                 </label>
                                 <input
                                     type="number"
-                                    name="cost"
+                                    name="unit_price"
                                     className="input-field"
                                     placeholder="0.00"
                                     min="0"
                                     step="0.01"
-                                    value={formData.cost}
+                                    value={formData.unit_price}
                                     onChange={handleChange}
                                     required
                                 />
                                 <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                                    Costo de adquisición del producto
+                                    Precio de venta del producto
                                 </span>
-                                {errors.cost && <span style={{ color: 'var(--danger-color)', fontSize: '0.8rem' }}>{errors.cost}</span>}
+                                {errors.unit_price && <span style={{ color: 'var(--danger-color)', fontSize: '0.8rem' }}>{errors.unit_price}</span>}
                             </div>
 
                             {/* Material */}
@@ -260,23 +222,37 @@ export const AddInventoryItemModal = ({ onClose, onSave }) => {
                                     onChange={handleChange}
                                 />
                             </div>
-                        </div>
-                    </div>
 
-                    {/* Notas - Full width */}
-                    <div className="filter-group" style={{ marginTop: '1.5rem' }}>
-                        <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>
-                            Notas Adicionales
-                        </label>
-                        <textarea
-                            name="notes"
-                            className="input-field"
-                            placeholder="Notas o comentarios adicionales..."
-                            value={formData.notes}
-                            onChange={handleChange}
-                            rows={2}
-                            style={{ resize: 'vertical' }}
-                        />
+                            {/* Talla */}
+                            <div className="filter-group">
+                                <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>
+                                    Talla
+                                </label>
+                                <input
+                                    type="text"
+                                    name="size"
+                                    className="input-field"
+                                    placeholder="Ej: S, M, L, XL"
+                                    value={formData.size}
+                                    onChange={handleChange}
+                                />
+                            </div>
+
+                            {/* Color */}
+                            <div className="filter-group">
+                                <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>
+                                    Color
+                                </label>
+                                <input
+                                    type="text"
+                                    name="color"
+                                    className="input-field"
+                                    placeholder="Ej: Rojo, Azul, Negro"
+                                    value={formData.color}
+                                    onChange={handleChange}
+                                />
+                            </div>
+                        </div>
                     </div>
 
                     {errors.submit && (

@@ -22,16 +22,15 @@ const transformSupabaseItem = (dbItem) => {
     return {
         id: dbItem.id,
         itemNumber: dbItem.item_number,
-        name: dbItem.name,
-        description: dbItem.description,
         category: dbItem.category,
         quantity: parseInt(dbItem.quantity) || 0,
-        cost: parseFloat(dbItem.cost) || 0,
+        unit_price: parseFloat(dbItem.unit_price) || 0,
         tipo: dbItem.tipo,
         material: dbItem.material,
         modelo: dbItem.modelo,
         diseno: dbItem.diseno,
-        notes: dbItem.notes,
+        size: dbItem.size,
+        color: dbItem.color,
         createdAt: new Date(dbItem.created_at).getTime(),
         updatedAt: new Date(dbItem.updated_at).getTime()
     };
@@ -47,7 +46,7 @@ export const InventoryService = {
 
             // Aplicar filtros
             if (filters.search) {
-                query = query.ilike('name', `%${filters.search}%`);
+                query = query.ilike('tipo', `%${filters.search}%`);
             }
 
             if (filters.category && filters.category !== '') {
@@ -107,10 +106,6 @@ export const InventoryService = {
     createInventoryItem: async (itemData) => {
         try {
             // Validaciones
-            if (!itemData.name || itemData.name.trim() === '') {
-                throw new Error('El nombre del item es requerido');
-            }
-
             if (!itemData.category) {
                 throw new Error('La categoría es requerida');
             }
@@ -132,16 +127,15 @@ export const InventoryService = {
                 .from('inventory_items')
                 .insert([{
                     item_number: itemNumber,
-                    name: itemData.name.trim(),
-                    description: itemData.description || null,
                     category: itemData.category,
                     quantity: quantity,
-                    cost: parseFloat(itemData.cost) || 0,
+                    unit_price: parseFloat(itemData.unit_price) || 0,
                     tipo: itemData.tipo || null,
                     material: itemData.material || null,
                     modelo: itemData.modelo || null,
                     diseno: itemData.diseno || null,
-                    notes: itemData.notes || null
+                    size: itemData.size || null,
+                    color: itemData.color || null
                 }])
                 .select()
                 .single();
@@ -189,8 +183,6 @@ export const InventoryService = {
         try {
             const updateData = {};
 
-            if (updates.name !== undefined) updateData.name = updates.name.trim();
-            if (updates.description !== undefined) updateData.description = updates.description;
             if (updates.category !== undefined) updateData.category = updates.category;
             if (updates.quantity !== undefined) {
                 const quantity = parseInt(updates.quantity);
@@ -199,18 +191,19 @@ export const InventoryService = {
                 }
                 updateData.quantity = quantity;
             }
-            if (updates.cost !== undefined) {
-                const cost = parseFloat(updates.cost);
-                if (isNaN(cost) || cost < 0) {
-                    throw new Error('El costo debe ser mayor o igual a 0');
+            if (updates.unit_price !== undefined) {
+                const unit_price = parseFloat(updates.unit_price);
+                if (isNaN(unit_price) || unit_price < 0) {
+                    throw new Error('El precio debe ser mayor o igual a 0');
                 }
-                updateData.cost = cost;
+                updateData.unit_price = unit_price;
             }
             if (updates.tipo !== undefined) updateData.tipo = updates.tipo;
             if (updates.material !== undefined) updateData.material = updates.material;
             if (updates.modelo !== undefined) updateData.modelo = updates.modelo;
             if (updates.diseno !== undefined) updateData.diseno = updates.diseno;
-            if (updates.notes !== undefined) updateData.notes = updates.notes;
+            if (updates.size !== undefined) updateData.size = updates.size;
+            if (updates.color !== undefined) updateData.color = updates.color;
 
             const { data: updatedItem, error } = await supabase
                 .from('inventory_items')

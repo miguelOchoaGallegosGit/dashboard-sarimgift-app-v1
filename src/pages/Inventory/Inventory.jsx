@@ -135,12 +135,12 @@ export const Inventory = () => {
                     <div className="filter-group">
                         <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>
                             <Search size={14} style={{ display: 'inline', marginRight: '0.5rem' }} />
-                            Buscar Producto
+                            Buscar por Tipo
                         </label>
                         <input
                             type="text"
                             name="search"
-                            placeholder="Nombre del producto..."
+                            placeholder="Tipo de producto..."
                             className="input-field"
                             value={filters.search}
                             onChange={handleFilterChange}

@@ -4,28 +4,30 @@ import { ArrowUpDown, ArrowUp, ArrowDown, Edit3, Eye, EyeOff, Settings } from 'l
 export const InventoryGrid = ({ items, onUpdateStock, sorting, onSortChange }) => {
     const [visibleColumns, setVisibleColumns] = useState({
         itemNumber: true,
-        name: true,
         category: true,
         quantity: true,
-        cost: true,
+        unit_price: true,
         tipo: true,
         material: true,
         modelo: false,
-        diseno: false
+        diseno: false,
+        size: false,
+        color: false
     });
 
     const [showColumnSelector, setShowColumnSelector] = useState(false);
 
     const columns = [
         { key: 'itemNumber', label: 'Item #', alwaysVisible: true },
-        { key: 'name', label: 'Nombre', alwaysVisible: false },
         { key: 'category', label: 'Categoría', alwaysVisible: false },
         { key: 'quantity', label: 'Cantidad', alwaysVisible: false },
-        { key: 'cost', label: 'Costo', alwaysVisible: false },
+        { key: 'unit_price', label: 'Precio', alwaysVisible: false },
         { key: 'tipo', label: 'Tipo', alwaysVisible: false },
         { key: 'material', label: 'Material', alwaysVisible: false },
         { key: 'modelo', label: 'Modelo', alwaysVisible: false },
-        { key: 'diseno', label: 'Diseño', alwaysVisible: false }
+        { key: 'diseno', label: 'Diseño', alwaysVisible: false },
+        { key: 'size', label: 'Talla', alwaysVisible: false },
+        { key: 'color', label: 'Color', alwaysVisible: false }
     ];
 
     const toggleColumn = (columnKey) => {
@@ -134,11 +136,6 @@ export const InventoryGrid = ({ items, onUpdateStock, sorting, onSortChange }) =
                                             </span>
                                         </td>
                                     )}
-                                    {visibleColumns.name && (
-                                        <td>
-                                            <strong>{item.name}</strong>
-                                        </td>
-                                    )}
                                     {visibleColumns.category && (
                                         <td>
                                             <span className="category-badge">{item.category}</span>
@@ -159,10 +156,10 @@ export const InventoryGrid = ({ items, onUpdateStock, sorting, onSortChange }) =
                                             </span>
                                         </td>
                                     )}
-                                    {visibleColumns.cost && (
+                                    {visibleColumns.unit_price && (
                                         <td>
                                             <span style={{ fontWeight: '600', color: 'var(--success-color)' }}>
-                                                S/ {item.cost.toFixed(2)}
+                                                S/ {item.unit_price?.toFixed(2) || '0.00'}
                                             </span>
                                         </td>
                                     )}
@@ -178,11 +175,17 @@ export const InventoryGrid = ({ items, onUpdateStock, sorting, onSortChange }) =
                                     {visibleColumns.diseno && (
                                         <td>{item.diseno || '-'}</td>
                                     )}
+                                    {visibleColumns.size && (
+                                        <td>{item.size || '-'}</td>
+                                    )}
+                                    {visibleColumns.color && (
+                                        <td>{item.color || '-'}</td>
+                                    )}
                                     <td style={{ textAlign: 'center' }}>
                                         <button
                                             onClick={() => onUpdateStock(item)}
                                             className="btn-icon"
-                                            style={{ background: 'rgba(99, 102, 241, 0.2)' }}
+                                            style={{ background: 'var(--primary-light)' }}
                                             title="Actualizar Stock"
                                         >
                                             <Edit3 size={16} color="var(--primary-color)" />
@@ -208,8 +211,7 @@ export const InventoryGrid = ({ items, onUpdateStock, sorting, onSortChange }) =
                                     <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>
                                         {item.itemNumber}
                                     </span>
-                                    <h3 style={{ margin: '0.25rem 0', fontSize: '1.1rem' }}>{item.name}</h3>
-                                    <span className="category-badge" style={{ fontSize: '0.75rem' }}>{item.category}</span>
+                                    <span className="category-badge" style={{ fontSize: '0.75rem', marginTop: '0.5rem', display: 'inline-block' }}>{item.category}</span>
                                 </div>
                                 <button
                                     onClick={() => onUpdateStock(item)}
@@ -237,8 +239,8 @@ export const InventoryGrid = ({ items, onUpdateStock, sorting, onSortChange }) =
                                     </span>
                                 </div>
                                 <div>
-                                    <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.75rem' }}>Costo</span>
-                                    <strong style={{ fontSize: '1rem', color: 'var(--success-color)' }}>S/ {item.cost.toFixed(2)}</strong>
+                                    <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.75rem' }}>Precio</span>
+                                    <strong style={{ fontSize: '1rem', color: 'var(--success-color)' }}>S/ {item.unit_price?.toFixed(2) || '0.00'}</strong>
                                 </div>
                                 {item.tipo && (
                                     <div>
@@ -262,6 +264,18 @@ export const InventoryGrid = ({ items, onUpdateStock, sorting, onSortChange }) =
                                     <div>
                                         <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.75rem' }}>Diseño</span>
                                         <span>{item.diseno}</span>
+                                    </div>
+                                )}
+                                {item.size && (
+                                    <div>
+                                        <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.75rem' }}>Talla</span>
+                                        <span>{item.size}</span>
+                                    </div>
+                                )}
+                                {item.color && (
+                                    <div>
+                                        <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.75rem' }}>Color</span>
+                                        <span>{item.color}</span>
                                     </div>
                                 )}
                             </div>

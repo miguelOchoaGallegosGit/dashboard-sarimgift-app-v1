@@ -3,7 +3,7 @@ import { X, AlertTriangle, Edit3 } from 'lucide-react';
 
 export const UpdateStockModal = ({ item, onClose, onUpdate }) => {
     const [newQuantity, setNewQuantity] = useState(item.quantity);
-    const [newCost, setNewCost] = useState(item.cost || 0);
+    const [newUnitPrice, setNewUnitPrice] = useState(item.unit_price || 0);
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
@@ -14,9 +14,9 @@ export const UpdateStockModal = ({ item, onClose, onUpdate }) => {
         setError('');
     };
 
-    const handleCostChange = (e) => {
+    const handleUnitPriceChange = (e) => {
         const value = e.target.value;
-        setNewCost(value);
+        setNewUnitPrice(value);
         setError('');
     };
 
@@ -38,7 +38,7 @@ export const UpdateStockModal = ({ item, onClose, onUpdate }) => {
         e.preventDefault();
 
         const quantity = parseInt(newQuantity);
-        const cost = parseFloat(newCost);
+        const unit_price = parseFloat(newUnitPrice);
 
         // Validación
         if (isNaN(quantity) || quantity < 0 || quantity > 1000) {
@@ -46,8 +46,8 @@ export const UpdateStockModal = ({ item, onClose, onUpdate }) => {
             return;
         }
 
-        if (isNaN(cost) || cost < 0) {
-            setError('El costo debe ser mayor o igual a 0');
+        if (isNaN(unit_price) || unit_price < 0) {
+            setError('El precio debe ser mayor o igual a 0');
             return;
         }
 
@@ -59,7 +59,7 @@ export const UpdateStockModal = ({ item, onClose, onUpdate }) => {
 
         setIsSubmitting(true);
         try {
-            await onUpdate(item.id, { quantity, cost });
+            await onUpdate(item.id, { quantity, unit_price });
             onClose();
         } catch (err) {
             console.error('Error updating item:', err);
@@ -72,7 +72,7 @@ export const UpdateStockModal = ({ item, onClose, onUpdate }) => {
     const handleCancelConfirmation = () => {
         setShowConfirmation(false);
         setNewQuantity(item.quantity);
-        setNewCost(item.cost || 0);
+        setNewUnitPrice(item.unit_price || 0);
     };
 
     if (showConfirmation) {
@@ -184,24 +184,24 @@ export const UpdateStockModal = ({ item, onClose, onUpdate }) => {
                         {error && <span style={{ color: 'var(--danger-color)', fontSize: '0.8rem', marginTop: '0.5rem' }}>{error}</span>}
                     </div>
 
-                    {/* Campo de nuevo costo */}
+                    {/* Campo de nuevo precio */}
                     <div className="filter-group">
                         <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>
-                            Nuevo Costo Unitario
+                            Nuevo Precio Unitario
                         </label>
                         <input
                             type="number"
                             className="input-field"
-                            placeholder="Ingrese el nuevo costo"
+                            placeholder="Ingrese el nuevo precio"
                             min="0"
                             step="0.01"
-                            value={newCost}
-                            onChange={handleCostChange}
+                            value={newUnitPrice}
+                            onChange={handleUnitPriceChange}
                             required
                             style={{ fontSize: '1.2rem', fontWeight: '600' }}
                         />
                         <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                            Costo de adquisición del producto
+                            Precio de venta del producto
                         </span>
                     </div>
 
