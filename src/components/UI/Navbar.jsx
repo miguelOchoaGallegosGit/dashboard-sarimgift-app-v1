@@ -1,32 +1,34 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, PlusCircle, Package } from 'lucide-react';
+import { LayoutDashboard, Package, Sun, Moon } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
 
 export const Navbar = () => {
     const location = useLocation();
+    const { theme, toggleTheme } = useTheme();
 
     const isActive = (path) => location.pathname === path;
 
     return (
-        <nav className="glass-panel navbar">
+        <nav className="navbar">
             <div className="navbar-brand">
-                <img src="/logo.png" alt="SarimGift Logo" className="navbar-logo" />
+                <img src="/logo.png" alt="SarimGift" className="navbar-logo" />
             </div>
 
-            <div className="navbar-actions">
-                <Link to="/" className={`btn ${isActive('/') ? 'btn-primary' : 'btn-secondary'}`}>
-                    <PlusCircle size={18} />
-                    <span>Nuevo Pedido</span>
-                </Link>
-                <Link to="/inventario" className={`btn ${isActive('/inventario') ? 'btn-primary' : 'btn-secondary'}`}>
-                    <Package size={18} />
-                    <span>Inventario</span>
-                </Link>
-                <Link to="/dashboard" className={`btn ${isActive('/dashboard') ? 'btn-primary' : 'btn-secondary'}`}>
-                    <LayoutDashboard size={18} />
+            <div className="navbar-links">
+                <Link to="/" className={`navbar-link ${(isActive('/') || isActive('/dashboard')) ? 'active' : ''}`}>
+                    <LayoutDashboard size={20} />
                     <span>Dashboard</span>
                 </Link>
+                <Link to="/inventario" className={`navbar-link ${isActive('/inventario') ? 'active' : ''}`}>
+                    <Package size={20} />
+                    <span>Inventario</span>
+                </Link>
             </div>
+
+            <button onClick={toggleTheme} className="theme-toggle" aria-label="Toggle theme">
+                {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
         </nav>
     );
 };

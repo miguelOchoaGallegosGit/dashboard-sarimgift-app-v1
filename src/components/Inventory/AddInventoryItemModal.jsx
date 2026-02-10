@@ -87,56 +87,41 @@ export const AddInventoryItemModal = ({ onClose, onSave }) => {
 
     return (
         <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div className="modal-content add-inventory-modal" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <div style={{ padding: '8px', borderRadius: '8px', background: 'rgba(99, 102, 241, 0.2)' }}>
+                        <div style={{ padding: '8px', borderRadius: '8px', background: 'var(--primary-light)' }}>
                             <Package size={24} color="var(--primary-color)" />
                         </div>
                         <h2 style={{ margin: 0, fontSize: '1.5rem' }}>Agregar Item al Inventario</h2>
                     </div>
-                    <button onClick={onClose} className="btn-icon" style={{ background: 'rgba(255, 255, 255, 0.05)' }}>
+                    <button onClick={onClose} className="btn-icon" style={{ background: 'var(--bg-tertiary)' }}>
                         <X size={20} />
                     </button>
                 </div>
 
                 <form onSubmit={handleSubmit} style={{ padding: '1.25rem' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                        {/* Nombre */}
-                        <div className="filter-group">
-                            <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>
-                                Nombre del Producto *
-                            </label>
-                            <input
-                                type="text"
-                                name="name"
-                                className="input-field"
-                                placeholder="Ej: Polo Básico"
-                                value={formData.name}
-                                onChange={handleChange}
-                                required
-                            />
-                            {errors.name && <span style={{ color: 'var(--danger-color)', fontSize: '0.8rem' }}>{errors.name}</span>}
-                        </div>
+                    <div className="inventory-form-grid">
+                        {/* Column 1 */}
+                        <div className="form-column">
+                            {/* Nombre */}
+                            <div className="filter-group">
+                                <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>
+                                    Nombre del Producto *
+                                </label>
+                                <input
+                                    type="text"
+                                    name="name"
+                                    className="input-field"
+                                    placeholder="Ej: Polo Básico"
+                                    value={formData.name}
+                                    onChange={handleChange}
+                                    required
+                                />
+                                {errors.name && <span style={{ color: 'var(--danger-color)', fontSize: '0.8rem' }}>{errors.name}</span>}
+                            </div>
 
-                        {/* Descripción */}
-                        <div className="filter-group">
-                            <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>
-                                Descripción
-                            </label>
-                            <textarea
-                                name="description"
-                                className="input-field"
-                                placeholder="Descripción detallada del producto..."
-                                value={formData.description}
-                                onChange={handleChange}
-                                rows={3}
-                                style={{ resize: 'vertical' }}
-                            />
-                        </div>
-
-                        {/* Categoría y Cantidad */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                            {/* Categoría */}
                             <div className="filter-group">
                                 <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>
                                     Categoría *
@@ -156,6 +141,7 @@ export const AddInventoryItemModal = ({ onClose, onSave }) => {
                                 {errors.category && <span style={{ color: 'var(--danger-color)', fontSize: '0.8rem' }}>{errors.category}</span>}
                             </div>
 
+                            {/* Cantidad */}
                             <div className="filter-group">
                                 <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>
                                     Cantidad *
@@ -173,32 +159,8 @@ export const AddInventoryItemModal = ({ onClose, onSave }) => {
                                 />
                                 {errors.quantity && <span style={{ color: 'var(--danger-color)', fontSize: '0.8rem' }}>{errors.quantity}</span>}
                             </div>
-                        </div>
 
-                        {/* Costo */}
-                        <div className="filter-group">
-                            <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>
-                                Costo Unitario *
-                            </label>
-                            <input
-                                type="number"
-                                name="cost"
-                                className="input-field"
-                                placeholder="0.00"
-                                min="0"
-                                step="0.01"
-                                value={formData.cost}
-                                onChange={handleChange}
-                                required
-                            />
-                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                                Costo de adquisición del producto
-                            </span>
-                            {errors.cost && <span style={{ color: 'var(--danger-color)', fontSize: '0.8rem' }}>{errors.cost}</span>}
-                        </div>
-
-                        {/* Precio, Talla, Color */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                            {/* Tipo */}
                             <div className="filter-group">
                                 <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>
                                     Tipo
@@ -207,29 +169,13 @@ export const AddInventoryItemModal = ({ onClose, onSave }) => {
                                     type="text"
                                     name="tipo"
                                     className="input-field"
-                                    placeholder="Ej: TOMATODO, CUADRO, BOTELLA"
+                                    placeholder="Ej: TOMATODO, CUADRO, BOTI"
                                     value={formData.tipo}
                                     onChange={handleChange}
                                 />
                             </div>
 
-                            <div className="filter-group">
-                                <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>
-                                    Material
-                                </label>
-                                <input
-                                    type="text"
-                                    name="material"
-                                    className="input-field"
-                                    placeholder="Ej: METAL PINTADO, MADERA"
-                                    value={formData.material}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                        </div>
-
-                        {/* Modelo y Diseño */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                            {/* Modelo */}
                             <div className="filter-group">
                                 <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>
                                     Modelo
@@ -243,7 +189,64 @@ export const AddInventoryItemModal = ({ onClose, onSave }) => {
                                     onChange={handleChange}
                                 />
                             </div>
+                        </div>
 
+                        {/* Column 2 */}
+                        <div className="form-column">
+                            {/* Descripción */}
+                            <div className="filter-group">
+                                <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>
+                                    Descripción
+                                </label>
+                                <textarea
+                                    name="description"
+                                    className="input-field"
+                                    placeholder="Descripción detallada del producto..."
+                                    value={formData.description}
+                                    onChange={handleChange}
+                                    rows={3}
+                                    style={{ resize: 'vertical' }}
+                                />
+                            </div>
+
+                            {/* Costo */}
+                            <div className="filter-group">
+                                <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>
+                                    Costo Unitario *
+                                </label>
+                                <input
+                                    type="number"
+                                    name="cost"
+                                    className="input-field"
+                                    placeholder="0.00"
+                                    min="0"
+                                    step="0.01"
+                                    value={formData.cost}
+                                    onChange={handleChange}
+                                    required
+                                />
+                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                                    Costo de adquisición del producto
+                                </span>
+                                {errors.cost && <span style={{ color: 'var(--danger-color)', fontSize: '0.8rem' }}>{errors.cost}</span>}
+                            </div>
+
+                            {/* Material */}
+                            <div className="filter-group">
+                                <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>
+                                    Material
+                                </label>
+                                <input
+                                    type="text"
+                                    name="material"
+                                    className="input-field"
+                                    placeholder="Ej: METAL, PINTADO, MADERA"
+                                    value={formData.material}
+                                    onChange={handleChange}
+                                />
+                            </div>
+
+                            {/* Diseño */}
                             <div className="filter-group">
                                 <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>
                                     Diseño
@@ -258,56 +261,56 @@ export const AddInventoryItemModal = ({ onClose, onSave }) => {
                                 />
                             </div>
                         </div>
+                    </div>
 
-                        {/* Notas */}
-                        <div className="filter-group">
-                            <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>
-                                Notas Adicionales
-                            </label>
-                            <textarea
-                                name="notes"
-                                className="input-field"
-                                placeholder="Notas o comentarios adicionales..."
-                                value={formData.notes}
-                                onChange={handleChange}
-                                rows={2}
-                                style={{ resize: 'vertical' }}
-                            />
+                    {/* Notas - Full width */}
+                    <div className="filter-group" style={{ marginTop: '1.5rem' }}>
+                        <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>
+                            Notas Adicionales
+                        </label>
+                        <textarea
+                            name="notes"
+                            className="input-field"
+                            placeholder="Notas o comentarios adicionales..."
+                            value={formData.notes}
+                            onChange={handleChange}
+                            rows={2}
+                            style={{ resize: 'vertical' }}
+                        />
+                    </div>
+
+                    {errors.submit && (
+                        <div style={{ padding: '1rem', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--danger-color)', borderRadius: '8px' }}>
+                            <span style={{ color: 'var(--danger-color)', fontSize: '0.9rem' }}>{errors.submit}</span>
                         </div>
+                    )}
 
-                        {errors.submit && (
-                            <div style={{ padding: '1rem', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--danger-color)', borderRadius: '8px' }}>
-                                <span style={{ color: 'var(--danger-color)', fontSize: '0.9rem' }}>{errors.submit}</span>
-                            </div>
-                        )}
-
-                        {/* Botones */}
-                        <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                            <button
-                                type="button"
-                                onClick={onClose}
-                                className="btn btn-secondary"
-                                style={{ flex: 1 }}
-                                disabled={isSubmitting}
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                type="submit"
-                                className="btn btn-primary"
-                                style={{ flex: 1 }}
-                                disabled={isSubmitting}
-                            >
-                                {isSubmitting ? (
-                                    <>
-                                        <div className="spinner" />
-                                        Guardando...
-                                    </>
-                                ) : (
-                                    'Guardar Item'
-                                )}
-                            </button>
-                        </div>
+                    {/* Botones */}
+                    <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="btn btn-secondary"
+                            style={{ flex: 1 }}
+                            disabled={isSubmitting}
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="submit"
+                            className="btn btn-primary"
+                            style={{ flex: 1 }}
+                            disabled={isSubmitting}
+                        >
+                            {isSubmitting ? (
+                                <>
+                                    <div className="spinner" />
+                                    Guardando...
+                                </>
+                            ) : (
+                                'Guardar Item'
+                            )}
+                        </button>
                     </div>
                 </form>
             </div>

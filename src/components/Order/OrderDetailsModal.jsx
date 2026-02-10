@@ -60,18 +60,18 @@ export const OrderDetailsModal = ({ order, onClose, onUpdate }) => {
             background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(5px)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
         }} onClick={onClose}>
-            <div className="glass-panel" style={{ width: '95%', maxWidth: '800px', maxHeight: '90vh', overflowY: 'auto', padding: '1.5rem', position: 'relative', background: '#0f172a' }} onClick={e => e.stopPropagation()}>
-                <button onClick={onClose} style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}>
+            <div className="glass-panel" style={{ width: '95%', maxWidth: '800px', maxHeight: '90vh', overflowY: 'auto', padding: '1.5rem', position: 'relative' }} onClick={e => e.stopPropagation()}>
+                <button onClick={onClose} className="btn-icon" style={{ position: 'absolute', top: '1rem', right: '1rem' }}>
                     <X size={24} />
                 </button>
 
-                <header style={{ borderBottom: '1px solid var(--glass-border)', paddingBottom: '1rem', marginBottom: '1rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div>
+                <header style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem', marginBottom: '1rem', paddingRight: '3rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
                             <h2 style={{ margin: 0 }}>Pedido {currentOrder.orderNumber}</h2>
                             <p style={{ color: 'var(--text-muted)', margin: 0 }}>{currentOrder.date} • {currentOrder.customerName}</p>
                         </div>
-                        <div style={{ padding: '0.5rem 1rem', borderRadius: '20px', background: isClosed ? 'var(--success-color)' : 'var(--primary-color)', fontWeight: 'bold' }}>
+                        <div style={{ padding: '0.5rem 1rem', borderRadius: '20px', background: isClosed ? 'var(--success-color)' : 'var(--primary-color)', fontWeight: 'bold', color: 'white', whiteSpace: 'nowrap', flexShrink: 0 }}>
                             {isClosed ? 'Cerrado y Pagado' : currentOrder.status}
                         </div>
                     </div>
@@ -79,7 +79,7 @@ export const OrderDetailsModal = ({ order, onClose, onUpdate }) => {
 
                 {/* Workflow Actions */}
                 {!isClosed && (
-                    <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '1rem', marginBottom: '2rem', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                    <div style={{ background: 'var(--bg-tertiary)', borderRadius: '12px', padding: '1rem', marginBottom: '2rem', display: 'flex', gap: '1rem', flexWrap: 'wrap', border: '1px solid var(--border-color)' }}>
                         {currentOrder.status === 'Recibido' && (
                             <button
                                 className="btn btn-primary"
@@ -91,7 +91,7 @@ export const OrderDetailsModal = ({ order, onClose, onUpdate }) => {
 
                         {(currentOrder.status === 'En Proceso' || currentOrder.status === 'Recibido') && ( /* Allow changing if 'Recibido' too? Logic says Received -> In Process -> Bifurcate. Let's assume user must click "Start Process" first, or we allow direct toggles which auto-move it. I will force "Start Process" first for clarity but could be flexible. Let's allow flexible. */
                             <>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: currentOrder.isDelivered ? 'rgba(16, 185, 129, 0.2)' : 'transparent', padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: currentOrder.isDelivered ? 'var(--success-bg)' : 'transparent', padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                                     <input
                                         type="checkbox"
                                         id="chk-delivered"
@@ -104,7 +104,7 @@ export const OrderDetailsModal = ({ order, onClose, onUpdate }) => {
                                     </label>
                                 </div>
 
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: currentOrder.isPaid ? 'rgba(16, 185, 129, 0.2)' : 'transparent', padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: currentOrder.isPaid ? 'var(--success-bg)' : 'transparent', padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                                     <input
                                         type="checkbox"
                                         id="chk-paid"
@@ -123,10 +123,10 @@ export const OrderDetailsModal = ({ order, onClose, onUpdate }) => {
 
                 <div style={{ display: 'grid', gap: '2rem', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
                     <div>
-                        <h3 style={{ borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.5rem' }}>Items</h3>
+                        <h3 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>Items</h3>
                         <ul style={{ listStyle: 'none', padding: 0 }}>
                             {currentOrder.items.map((item) => (
-                                <li key={item.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.8rem 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                <li key={item.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.8rem 0', borderBottom: '1px solid var(--border-subtle)' }}>
                                     <div>
                                         <div style={{ fontWeight: 'bold' }}>{item.quantity} x {item.description}</div>
                                         <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>P. Unit: S/ {item.unitPrice.toFixed(2)}</div>
@@ -137,7 +137,7 @@ export const OrderDetailsModal = ({ order, onClose, onUpdate }) => {
                         </ul>
                     </div>
 
-                    <div style={{ background: 'rgba(0,0,0,0.2)', padding: '1.5rem', borderRadius: '12px', height: 'fit-content' }}>
+                    <div style={{ background: 'var(--bg-tertiary)', padding: '1.5rem', borderRadius: '12px', height: 'fit-content', border: '1px solid var(--border-color)' }}>
                         <h3 style={{ marginTop: 0 }}>Resumen Financiero</h3>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                             <span>Total Importe:</span>
@@ -147,7 +147,7 @@ export const OrderDetailsModal = ({ order, onClose, onUpdate }) => {
                             <span>Total Adelanto:</span>
                             <span>S/ {currentOrder.totalAdvance.toFixed(2)}</span>
                         </div>
-                        <div style={{ borderTop: '1px solid var(--glass-border)', margin: '1rem 0' }}></div>
+                        <div style={{ borderTop: '1px solid var(--border-color)', margin: '1rem 0' }}></div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--primary-color)' }}>
                             <span>Saldo a Favor:</span>
                             <span>S/ {currentOrder.totalBalance.toFixed(2)}</span>

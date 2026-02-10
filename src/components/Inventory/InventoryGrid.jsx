@@ -214,7 +214,7 @@ export const InventoryGrid = ({ items, onUpdateStock, sorting, onSortChange }) =
                                 <button
                                     onClick={() => onUpdateStock(item)}
                                     className="btn-icon"
-                                    style={{ background: 'rgba(99, 102, 241, 0.2)' }}
+                                    style={{ background: 'var(--primary-light)' }}
                                 >
                                     <Edit3 size={16} color="var(--primary-color)" />
                                 </button>

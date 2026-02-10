@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { OrderService } from '../../services';
-import { ShoppingBag, Calendar, User, ChevronRight, Wallet } from 'lucide-react';
+import { ShoppingBag, Calendar, User, ChevronRight, Wallet, Plus } from 'lucide-react';
 import { OrderDetailsModal } from '../../components/Order/OrderDetailsModal';
+import { NewOrderModal } from '../../components/Order/NewOrderModal';
 
 export const Dashboard = () => {
     const [orders, setOrders] = useState([]);
     const [selectedOrder, setSelectedOrder] = useState(null);
+    const [isNewOrderModalOpen, setIsNewOrderModalOpen] = useState(false);
     const [filters, setFilters] = useState({
         search: '',
         status: '',
@@ -80,23 +82,38 @@ export const Dashboard = () => {
         }
     };
 
+    const handleNewOrderCreated = (newOrder) => {
+        setOrders(prev => [newOrder, ...prev]);
+    };
+
     return (
-        <div style={{ padding: '2rem 0' }}>
+        <div className="main-content">
             <header style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-                <h1 style={{ fontSize: '2.4rem', margin: 0, background: 'linear-gradient(to right, #fff, #94a3b8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', fontWeight: '800' }}>
+                <h1 className="dashboard-title">
                     Dashboard
                 </h1>
 
-                <div className="glass-panel" style={{ padding: '0.6rem 2rem', display: 'flex', gap: '2rem' }}>
-                    <div style={{ textAlign: 'center' }}>
-                        <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Total</span>
-                        <span style={{ fontWeight: '800', fontSize: '1.4rem' }}>{filteredOrders.length}</span>
-                    </div>
-                    <div style={{ textAlign: 'center' }}>
-                        <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Pendientes</span>
-                        <span style={{ fontWeight: '800', fontSize: '1.4rem', color: 'var(--warning-color)' }}>
-                            {filteredOrders.filter(o => o.status !== 'Cerrado' && o.status !== 'Cerrado y Pagado').length}
-                        </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                    <button
+                        onClick={() => setIsNewOrderModalOpen(true)}
+                        className="btn btn-primary"
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                    >
+                        <Plus size={20} />
+                        Nuevo Pedido
+                    </button>
+
+                    <div className="glass-panel" style={{ padding: '0.6rem 2rem', display: 'flex', gap: '2rem' }}>
+                        <div style={{ textAlign: 'center' }}>
+                            <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Total</span>
+                            <span style={{ fontWeight: '800', fontSize: '1.4rem' }}>{filteredOrders.length}</span>
+                        </div>
+                        <div style={{ textAlign: 'center' }}>
+                            <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Pendientes</span>
+                            <span style={{ fontWeight: '800', fontSize: '1.4rem', color: 'var(--warning-color)' }}>
+                                {filteredOrders.filter(o => o.status !== 'Cerrado' && o.status !== 'Cerrado y Pagado').length}
+                            </span>
+                        </div>
                     </div>
                 </div>
             </header>
@@ -133,25 +150,25 @@ export const Dashboard = () => {
                     </div>
 
                     <div className="filter-group">
-                        <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>Fecha Desde</label>
-                        <input
-                            type="date"
-                            name="startDate"
-                            className="input-field"
-                            value={filters.startDate}
-                            onChange={handleFilterChange}
-                        />
-                    </div>
-
-                    <div className="filter-group">
-                        <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>Fecha Hasta</label>
-                        <input
-                            type="date"
-                            name="endDate"
-                            className="input-field"
-                            value={filters.endDate}
-                            onChange={handleFilterChange}
-                        />
+                        <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>Rango de Fechas</label>
+                        <div className="date-range-group">
+                            <input
+                                type="date"
+                                name="startDate"
+                                className="input-field"
+                                placeholder="Desde"
+                                value={filters.startDate}
+                                onChange={handleFilterChange}
+                            />
+                            <input
+                                type="date"
+                                name="endDate"
+                                className="input-field"
+                                placeholder="Hasta"
+                                value={filters.endDate}
+                                onChange={handleFilterChange}
+                            />
+                        </div>
                     </div>
 
                     <button
@@ -167,15 +184,15 @@ export const Dashboard = () => {
             {isFiltered && filteredOrders.length > 0 && (
                 <div className="disclaimer-banner">
                     <div className="disclaimer-content">
-                        <div style={{ padding: '10px', borderRadius: '12px', background: 'rgba(99, 102, 241, 0.2)', color: 'var(--primary-color)' }}>
+                        <div style={{ padding: '10px', borderRadius: '12px', background: 'var(--primary-light)', color: 'var(--primary-color)' }}>
                             <Wallet size={24} />
                         </div>
                         <div>
                             <h4 style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>
                                 Total Acumulado (Filtro)
                             </h4>
-                            <p style={{ margin: 0, fontSize: '0.85rem' }}>
-                                Suma de los <strong style={{ color: '#fff' }}>{filteredOrders.length}</strong> pedidos encontrados
+                            <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                                Suma de los <strong style={{ color: 'var(--text-primary)' }}>{filteredOrders.length}</strong> pedidos encontrados
                             </p>
                         </div>
                     </div>
@@ -262,6 +279,12 @@ export const Dashboard = () => {
                     }}
                 />
             )}
+
+            <NewOrderModal
+                isOpen={isNewOrderModalOpen}
+                onClose={() => setIsNewOrderModalOpen(false)}
+                onOrderCreated={handleNewOrderCreated}
+            />
 
             {isLoading && (
                 <div className="loading-overlay">

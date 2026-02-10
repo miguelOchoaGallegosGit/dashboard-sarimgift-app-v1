@@ -81,7 +81,7 @@ export const UpdateStockModal = ({ item, onClose, onUpdate }) => {
                 <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '450px' }}>
                     <div className="modal-header" style={{ borderBottom: 'none', paddingBottom: '1rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                            <div style={{ padding: '8px', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.2)' }}>
+                            <div style={{ padding: '8px', borderRadius: '8px', background: 'var(--danger-bg)' }}>
                                 <AlertTriangle size={24} color="var(--danger-color)" />
                             </div>
                             <h2 style={{ margin: 0, fontSize: '1.3rem' }}>Confirmar Stock en Cero</h2>
@@ -136,19 +136,19 @@ export const UpdateStockModal = ({ item, onClose, onUpdate }) => {
             <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
                 <div className="modal-header">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <div style={{ padding: '8px', borderRadius: '8px', background: 'rgba(99, 102, 241, 0.2)' }}>
+                        <div style={{ padding: '8px', borderRadius: '8px', background: 'var(--primary-light)' }}>
                             <Edit3 size={24} color="var(--primary-color)" />
                         </div>
                         <h2 style={{ margin: 0, fontSize: '1.5rem' }}>Actualizar Stock y Costo</h2>
                     </div>
-                    <button onClick={onClose} className="btn-icon" style={{ background: 'rgba(255, 255, 255, 0.05)' }}>
+                    <button onClick={onClose} className="btn-icon" style={{ background: 'var(--bg-tertiary)' }}>
                         <X size={20} />
                     </button>
                 </div>
 
                 <form onSubmit={handleSubmit} style={{ padding: '1.25rem' }}>
                     {/* Información del item */}
-                    <div className="glass-panel" style={{ padding: '1rem', marginBottom: '1.5rem', background: 'rgba(0, 0, 0, 0.2)' }}>
+                    <div className="glass-panel" style={{ padding: '1rem', marginBottom: '1.5rem', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)' }}>
                         <div style={{ marginBottom: '0.5rem' }}>
                             <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>
                                 {item.itemNumber}

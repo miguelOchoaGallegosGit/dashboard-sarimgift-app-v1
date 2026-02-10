@@ -91,11 +91,11 @@ export const Inventory = () => {
     const lowStockCount = items.filter(item => item.quantity < 5).length;
 
     return (
-        <div style={{ padding: '2rem 0' }}>
+        <div className="main-content">
             {/* Header */}
             <header style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
                 <div>
-                    <h1 style={{ fontSize: '2.4rem', margin: 0, background: 'linear-gradient(to right, #fff, #94a3b8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', fontWeight: '800' }}>
+                    <h1 className="dashboard-title">
                         Inventario
                     </h1>
                     <p style={{ margin: '0.5rem 0 0 0', color: 'var(--text-muted)', fontSize: '0.95rem' }}>
