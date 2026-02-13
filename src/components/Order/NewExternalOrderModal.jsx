@@ -185,7 +185,7 @@ export const NewExternalOrderModal = ({ isOpen, onClose, onOrderCreated }) => {
                                     />
                                 </div>
                                 <div>
-                                    <label className="input-label">Fecha Programada de Entrega</label>
+                                    <label className="input-label">Fecha de Entrega</label>
                                     <input
                                         type="date"
                                         value={scheduledDeliveryDate}
