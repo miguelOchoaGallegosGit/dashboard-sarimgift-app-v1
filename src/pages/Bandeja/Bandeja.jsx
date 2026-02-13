@@ -201,7 +201,7 @@ export const Bandeja = () => {
                 )}
             </div>
 
-            {/* Tabla de Datos */}
+            {/* Tabla de Datos / Cards en Mobile */}
             <div className="glass-panel" style={{ padding: '1.5rem', marginBottom: '2rem' }}>
                 {/* Selector de columnas */}
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem', position: 'relative' }}>
@@ -220,122 +220,183 @@ export const Bandeja = () => {
                             top: '100%',
                             right: 0,
                             marginTop: '0.5rem',
-                            padding: '1rem',
-                            minWidth: '200px',
-                            zIndex: 10,
-                            boxShadow: '0 10px 40px rgba(0,0,0,0.3)'
+                            padding: '1.25rem',
+                            minWidth: '220px',
+                            zIndex: 100,
+                            boxShadow: 'var(--shadow-lg)',
+                            border: '1px solid var(--border-color)',
+                            backgroundColor: 'var(--bg-secondary)'
                         }}>
-                            <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>
+                            <p style={{ margin: '0 0 1rem 0', fontSize: '0.85rem', fontWeight: '700', color: 'var(--primary-color)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                                 Columnas visibles
                             </p>
-                            {Object.entries(visibleColumns).map(([key, value]) => (
-                                <label key={key} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 0', cursor: 'pointer' }}>
-                                    <input
-                                        type="checkbox"
-                                        checked={value}
-                                        onChange={() => toggleColumn(key)}
-                                        style={{ cursor: 'pointer' }}
-                                    />
-                                    <span style={{ fontSize: '0.9rem' }}>
-                                        {key === 'customerName' ? 'Nombre Cliente' :
-                                            key === 'phone' ? 'Teléfono' :
-                                                key === 'deliveryAddress' ? 'Dirección' :
-                                                    key === 'district' ? 'Distrito' :
-                                                        'Detalles Adicionales'}
-                                    </span>
-                                </label>
-                            ))}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                {Object.entries(visibleColumns).map(([key, value]) => (
+                                    <label key={key} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.4rem 0', cursor: 'pointer', transition: 'all 0.2s' }} className="column-toggle-label">
+                                        <input
+                                            type="checkbox"
+                                            checked={value}
+                                            onChange={() => toggleColumn(key)}
+                                            style={{
+                                                cursor: 'pointer',
+                                                width: '18px',
+                                                height: '18px',
+                                                accentColor: 'var(--primary-color)'
+                                            }}
+                                        />
+                                        <span style={{ fontSize: '0.95rem', color: 'var(--text-primary)' }}>
+                                            {key === 'customerName' ? 'Nombre Cliente' :
+                                                key === 'phone' ? 'Teléfono' :
+                                                    key === 'deliveryAddress' ? 'Dirección' :
+                                                        key === 'district' ? 'Distrito' :
+                                                            'Detalles Adicionales'}
+                                        </span>
+                                    </label>
+                                ))}
+                            </div>
                         </div>
                     )}
                 </div>
 
-                <div style={{ overflowX: 'auto' }}>
-                    <table className="data-table" style={{ width: '100%' }}>
-                        <thead>
-                            <tr>
-                                {visibleColumns.customerName && (
-                                    <th onClick={() => handleSort('customerName')} style={{ cursor: 'pointer', userSelect: 'none' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                            Nombre Cliente {getSortIcon('customerName')}
-                                        </div>
-                                    </th>
-                                )}
-                                {visibleColumns.phone && (
-                                    <th onClick={() => handleSort('phone')} style={{ cursor: 'pointer', userSelect: 'none' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                            Teléfono {getSortIcon('phone')}
-                                        </div>
-                                    </th>
-                                )}
-                                {visibleColumns.deliveryAddress && (
-                                    <th onClick={() => handleSort('deliveryAddress')} style={{ cursor: 'pointer', userSelect: 'none' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                            Dirección {getSortIcon('deliveryAddress')}
-                                        </div>
-                                    </th>
-                                )}
-                                {visibleColumns.district && (
-                                    <th onClick={() => handleSort('district')} style={{ cursor: 'pointer', userSelect: 'none' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                            Distrito {getSortIcon('district')}
-                                        </div>
-                                    </th>
-                                )}
-                                {visibleColumns.additionalDetails && (
-                                    <th>Detalles Adicionales</th>
-                                )}
-                                <th style={{ textAlign: 'center', width: '100px' }}>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {orders.map((order) => (
-                                <tr key={order.id}>
+                <div className="bandeja-table-container">
+                    <div style={{ overflowX: 'auto' }}>
+                        <table className="data-table" style={{ width: '100%' }}>
+                            <thead>
+                                <tr>
                                     {visibleColumns.customerName && (
-                                        <td style={{ fontWeight: '600' }}>{order.customerName}</td>
+                                        <th onClick={() => handleSort('customerName')} style={{ cursor: 'pointer', userSelect: 'none' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}>
+                                                Nombre Cliente {getSortIcon('customerName')}
+                                            </div>
+                                        </th>
                                     )}
                                     {visibleColumns.phone && (
-                                        <td>{order.phone}</td>
+                                        <th onClick={() => handleSort('phone')} style={{ cursor: 'pointer', userSelect: 'none' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}>
+                                                Teléfono {getSortIcon('phone')}
+                                            </div>
+                                        </th>
                                     )}
                                     {visibleColumns.deliveryAddress && (
-                                        <td>{order.deliveryAddress || '-'}</td>
+                                        <th onClick={() => handleSort('deliveryAddress')} style={{ cursor: 'pointer', userSelect: 'none' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}>
+                                                Dirección {getSortIcon('deliveryAddress')}
+                                            </div>
+                                        </th>
                                     )}
                                     {visibleColumns.district && (
-                                        <td>{order.district || '-'}</td>
+                                        <th onClick={() => handleSort('district')} style={{ cursor: 'pointer', userSelect: 'none' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}>
+                                                Distrito {getSortIcon('district')}
+                                            </div>
+                                        </th>
                                     )}
                                     {visibleColumns.additionalDetails && (
-                                        <td style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                            {order.additionalDetails || '-'}
-                                        </td>
+                                        <th>Detalles Adicionales</th>
                                     )}
-                                    <td style={{ textAlign: 'center' }}>
-                                        <button
-                                            onClick={() => setSelectedOrder(order)}
-                                            className="btn-icon"
-                                            style={{
-                                                padding: '0.5rem',
-                                                color: 'var(--primary-color)',
-                                                background: 'var(--primary-light)',
-                                                border: 'none',
-                                                borderRadius: '8px',
-                                                cursor: 'pointer',
-                                                transition: 'all 0.2s'
-                                            }}
-                                            title="Ver detalle"
-                                        >
-                                            <Eye size={18} />
-                                        </button>
-                                    </td>
+                                    <th style={{ textAlign: 'center', width: '100px' }}>Acciones</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-
-                    {orders.length === 0 && !isLoading && (
-                        <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-                            <p style={{ fontSize: '1.1rem' }}>No se encontraron pedidos</p>
-                        </div>
-                    )}
+                            </thead>
+                            <tbody>
+                                {orders.map((order) => (
+                                    <tr key={order.id}>
+                                        {visibleColumns.customerName && (
+                                            <td style={{ fontWeight: '600' }}>{order.customerName}</td>
+                                        )}
+                                        {visibleColumns.phone && (
+                                            <td>{order.phone}</td>
+                                        )}
+                                        {visibleColumns.deliveryAddress && (
+                                            <td>{order.deliveryAddress || '-'}</td>
+                                        )}
+                                        {visibleColumns.district && (
+                                            <td style={{ textAlign: 'center' }}>
+                                                <span style={{
+                                                    padding: '0.25rem 0.75rem',
+                                                    borderRadius: '20px',
+                                                    backgroundColor: 'var(--bg-tertiary)',
+                                                    fontSize: '0.85rem'
+                                                }}>
+                                                    {order.district || '-'}
+                                                </span>
+                                            </td>
+                                        )}
+                                        {visibleColumns.additionalDetails && (
+                                            <td style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                {order.additionalDetails || '-'}
+                                            </td>
+                                        )}
+                                        <td style={{ textAlign: 'center' }}>
+                                            <button
+                                                onClick={() => setSelectedOrder(order)}
+                                                className="btn-icon"
+                                                style={{ color: 'var(--primary-color)' }}
+                                                title="Ver detalle"
+                                            >
+                                                <Eye size={18} />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
+
+                <div className="bandeja-cards-container">
+                    {orders.map((order) => (
+                        <div key={order.id} className="bandeja-card">
+                            <div className="bandeja-card-header">
+                                <div>
+                                    <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '700', color: 'var(--text-primary)' }}>
+                                        {order.customerName}
+                                    </h3>
+                                    <p style={{ margin: '0.25rem 0 0', fontSize: '0.9rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                        {order.phone}
+                                    </p>
+                                </div>
+                                <span style={{
+                                    padding: '0.25rem 0.75rem',
+                                    borderRadius: '20px',
+                                    backgroundColor: 'var(--primary-light)',
+                                    color: 'var(--primary-color)',
+                                    fontSize: '0.75rem',
+                                    fontWeight: '700'
+                                }}>
+                                    {order.district || 'N/A'}
+                                </span>
+                            </div>
+
+                            <div className="bandeja-card-body">
+                                <div>
+                                    <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Dirección</p>
+                                    <p style={{ margin: '0.25rem 0 0', fontWeight: '500' }}>{order.deliveryAddress || '-'}</p>
+                                </div>
+                                <div>
+                                    <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Detalles</p>
+                                    <p style={{ margin: '0.25rem 0 0', fontWeight: '500', fontSize: '0.9rem' }}>{order.additionalDetails || '-'}</p>
+                                </div>
+                            </div>
+
+                            <div className="bandeja-card-footer">
+                                <button
+                                    onClick={() => setSelectedOrder(order)}
+                                    className="btn btn-secondary"
+                                    style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                                >
+                                    <Eye size={18} />
+                                    Ver Detalle
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {orders.length === 0 && !isLoading && (
+                    <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+                        <p style={{ fontSize: '1.1rem' }}>No se encontraron pedidos</p>
+                    </div>
+                )}
             </div>
 
             {/* Paginación Inferior */}

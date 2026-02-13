@@ -136,68 +136,72 @@ export const NewQuotationModal = ({ isOpen, onClose, onQuotationCreated }) => {
 
     return (
         <div className="modal-overlay" onClick={handleClose}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '1000px' }}>
+            <div className="modal-content add-inventory-modal" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
                     <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '700', color: 'var(--primary-color)' }}>
                         Ingresar Cotización
                     </h2>
-                    <button onClick={handleClose} className="modal-close">
+                    <button onClick={handleClose} className="btn-icon">
                         <X size={24} />
                     </button>
                 </div>
 
                 <form onSubmit={handleSubmit}>
-                    <div className="modal-body" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+                    <div className="modal-body">
                         {/* Información del Cliente */}
                         <div className="glass-panel" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-                                <div style={{ gridColumn: 'span 2' }}>
-                                    <label className="input-label">Nombre del Cliente *</label>
-                                    <input
-                                        type="text"
-                                        value={customerName}
-                                        onChange={(e) => setCustomerName(e.target.value)}
-                                        className="input-field"
-                                        placeholder="Ej. Alejandro Juárez"
-                                        required
-                                    />
+                            <div className="inventory-form-grid">
+                                <div className="form-column">
+                                    <div className="filter-group">
+                                        <label className="input-label">Nombre del Cliente *</label>
+                                        <input
+                                            type="text"
+                                            value={customerName}
+                                            onChange={(e) => setCustomerName(e.target.value)}
+                                            className="input-field"
+                                            placeholder="Ej. Alejandro Juárez"
+                                            required
+                                        />
+                                    </div>
+                                    <div className="filter-group">
+                                        <label className="input-label">Teléfono *</label>
+                                        <input
+                                            type="tel"
+                                            value={phone}
+                                            onChange={(e) => {
+                                                const value = e.target.value.replace(/\D/g, '');
+                                                if (value.length <= 9) {
+                                                    setPhone(value);
+                                                }
+                                            }}
+                                            className="input-field"
+                                            placeholder="987654321"
+                                            maxLength={9}
+                                            pattern="[0-9]{9}"
+                                            required
+                                        />
+                                        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                                            9 dígitos
+                                        </p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <label className="input-label">Teléfono *</label>
-                                    <input
-                                        type="tel"
-                                        value={phone}
-                                        onChange={(e) => {
-                                            const value = e.target.value.replace(/\D/g, ''); // Solo números
-                                            if (value.length <= 9) {
-                                                setPhone(value);
-                                            }
-                                        }}
-                                        className="input-field"
-                                        placeholder="987654321"
-                                        maxLength={9}
-                                        pattern="[0-9]{9}"
-                                        required
-                                    />
-                                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                                        9 dígitos
-                                    </p>
-                                </div>
-                                <div>
-                                    <label className="input-label">Fecha de Entrega</label>
-                                    <input
-                                        type="date"
-                                        value={scheduledDeliveryDate}
-                                        onChange={(e) => setScheduledDeliveryDate(e.target.value)}
-                                        className="input-field"
-                                    />
+                                <div className="form-column">
+                                    <div className="filter-group">
+                                        <label className="input-label">Fecha de Entrega</label>
+                                        <input
+                                            type="date"
+                                            value={scheduledDeliveryDate}
+                                            onChange={(e) => setScheduledDeliveryDate(e.target.value)}
+                                            className="input-field"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
                         {/* Detalle de Items */}
                         <div className="glass-panel" style={{ padding: '1.5rem' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                                 <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '600', color: 'var(--primary-color)', textTransform: 'uppercase', letterSpacing: '1px' }}>
                                     Detalle de Items
                                 </h3>
@@ -212,120 +216,120 @@ export const NewQuotationModal = ({ isOpen, onClose, onQuotationCreated }) => {
                                 </button>
                             </div>
 
-                            <div style={{ overflowX: 'auto' }}>
-                                <table className="data-table" style={{ width: '100%', marginBottom: '0' }}>
-                                    <thead>
-                                        <tr>
-                                            <th style={{ textAlign: 'center', width: '80px' }}>Cant.</th>
-                                            <th style={{ minWidth: '250px' }}>Descripción</th>
-                                            <th style={{ textAlign: 'right', width: '130px' }}>Precio Unit. (S/)</th>
-                                            <th style={{ textAlign: 'right', width: '130px' }}>Subtotal (S/)</th>
-                                            <th style={{ textAlign: 'right', width: '130px' }}>Adelanto (S/)</th>
-                                            <th style={{ textAlign: 'center', width: '50px' }}></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {items.map((item) => (
-                                            <tr key={item.id}>
-                                                <td style={{ textAlign: 'center' }}>
-                                                    <input
-                                                        type="number"
-                                                        value={item.quantity}
-                                                        onChange={(e) => handleItemChange(item.id, 'quantity', e.target.value)}
-                                                        className="input-field"
-                                                        min="1"
-                                                        style={{ width: '100%', textAlign: 'center', padding: '0.5rem' }}
-                                                    />
-                                                </td>
-                                                <td>
-                                                    <input
-                                                        type="text"
-                                                        value={item.product}
-                                                        onChange={(e) => handleItemChange(item.id, 'product', e.target.value)}
-                                                        className="input-field"
-                                                        placeholder="Ej. Taza personalizada, Camisa..."
-                                                        style={{ padding: '0.5rem' }}
-                                                    />
-                                                </td>
-                                                <td style={{ textAlign: 'right' }}>
-                                                    <input
-                                                        type="number"
-                                                        value={item.unitPrice}
-                                                        onChange={(e) => handleItemChange(item.id, 'unitPrice', e.target.value)}
-                                                        className="input-field"
-                                                        min="0"
-                                                        step="0.01"
-                                                        style={{ width: '100%', textAlign: 'right', padding: '0.5rem' }}
-                                                    />
-                                                </td>
-                                                <td style={{ textAlign: 'right', fontWeight: '700', fontSize: '1rem', color: 'var(--primary-color)' }}>
-                                                    {calculateItemTotal(item).toFixed(2)}
-                                                </td>
-                                                <td style={{ textAlign: 'right' }}>
-                                                    <input
-                                                        type="number"
-                                                        value={item.advancePayment}
-                                                        onChange={(e) => handleItemChange(item.id, 'advancePayment', e.target.value)}
-                                                        className="input-field"
-                                                        min="0"
-                                                        step="0.01"
-                                                        style={{ width: '100%', textAlign: 'right', padding: '0.5rem' }}
-                                                    />
-                                                </td>
-                                                <td style={{ textAlign: 'center' }}>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleRemoveItem(item.id)}
-                                                        className="btn-icon"
-                                                        style={{
-                                                            padding: '0.5rem',
-                                                            color: 'var(--danger-color)',
-                                                            background: 'transparent',
-                                                            border: 'none',
-                                                            cursor: 'pointer'
-                                                        }}
-                                                    >
-                                                        <Trash2 size={18} />
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                            <div className="items-list">
+                                {items.map((item) => (
+                                    <div key={item.id} className="item-row" style={{ position: 'relative' }}>
+                                        <div className="filter-group" style={{ width: '80px' }}>
+                                            <label className="input-label hide-on-desktop">Cant.</label>
+                                            <input
+                                                type="number"
+                                                value={item.quantity}
+                                                onChange={(e) => handleItemChange(item.id, 'quantity', e.target.value)}
+                                                className="input-field"
+                                                min="1"
+                                                style={{ textAlign: 'center' }}
+                                            />
+                                        </div>
+                                        <div className="filter-group" style={{ flex: 1 }}>
+                                            <label className="input-label hide-on-desktop">Descripción</label>
+                                            <input
+                                                type="text"
+                                                value={item.product}
+                                                onChange={(e) => handleItemChange(item.id, 'product', e.target.value)}
+                                                className="input-field"
+                                                placeholder="Ej. Taza personalizada, Camisa..."
+                                            />
+                                        </div>
+                                        <div className="filter-group" style={{ width: '130px' }}>
+                                            <label className="input-label hide-on-desktop">P. Unit. (S/)</label>
+                                            <input
+                                                type="number"
+                                                value={item.unitPrice}
+                                                onChange={(e) => handleItemChange(item.id, 'unitPrice', e.target.value)}
+                                                className="input-field"
+                                                min="0"
+                                                step="0.01"
+                                                style={{ textAlign: 'right' }}
+                                            />
+                                        </div>
+                                        <div className="filter-group" style={{ width: '130px' }}>
+                                            <label className="input-label hide-on-desktop">Subtotal (S/)</label>
+                                            <div style={{
+                                                height: '48px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'flex-end',
+                                                fontWeight: '700',
+                                                fontSize: '1rem',
+                                                color: 'var(--primary-color)',
+                                                background: 'var(--bg-tertiary)',
+                                                padding: '0 1rem',
+                                                borderRadius: '8px',
+                                                border: '1px solid var(--border-color)'
+                                            }}>
+                                                {calculateItemTotal(item).toFixed(2)}
+                                            </div>
+                                        </div>
+                                        <div className="filter-group" style={{ width: '130px' }}>
+                                            <label className="input-label hide-on-desktop">Adelanto (S/)</label>
+                                            <input
+                                                type="number"
+                                                value={item.advancePayment}
+                                                onChange={(e) => handleItemChange(item.id, 'advancePayment', e.target.value)}
+                                                className="input-field"
+                                                min="0"
+                                                step="0.01"
+                                                style={{ textAlign: 'right' }}
+                                            />
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveItem(item.id)}
+                                            className="btn-icon"
+                                            style={{
+                                                color: 'var(--danger-color)',
+                                                background: 'transparent',
+                                                padding: '0.5rem'
+                                            }}
+                                        >
+                                            <Trash2 size={20} />
+                                        </button>
+                                    </div>
+                                ))}
                             </div>
 
                             {/* Resumen de Totales */}
                             <div style={{
                                 marginTop: '1.5rem',
                                 padding: '1.5rem',
-                                background: 'var(--glass-bg)',
+                                background: 'var(--bg-tertiary)',
                                 borderRadius: '12px',
-                                border: '1px solid var(--glass-border)',
+                                border: '1px solid var(--border-color)',
                                 display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center'
+                                flexWrap: 'wrap',
+                                gap: '1.5rem'
                             }}>
-                                <div style={{ textAlign: 'right', flex: 1, paddingRight: '2rem' }}>
-                                    <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                <div style={{ flex: 1, minWidth: '150px' }}>
+                                    <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>
                                         MONTO TOTAL
                                     </p>
-                                    <p style={{ margin: '0.2rem 0 0', fontSize: '1.5rem', fontWeight: '700', color: 'var(--text-color)' }}>
+                                    <p style={{ margin: '0.2rem 0 0', fontSize: '1.5rem', fontWeight: '800', color: 'var(--text-primary)' }}>
                                         S/ {calculateTotal().toFixed(2)}
                                     </p>
                                 </div>
-                                <div style={{ textAlign: 'right', flex: 1, paddingRight: '2rem', borderRight: '1px solid var(--border-color)', borderLeft: '1px solid var(--border-color)' }}>
-                                    <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--success-color)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                <div style={{ flex: 1, minWidth: '150px' }}>
+                                    <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--success-color)', textTransform: 'uppercase', letterSpacing: '1px' }}>
                                         ADELANTADO
                                     </p>
-                                    <p style={{ margin: '0.2rem 0 0', fontSize: '1.5rem', fontWeight: '700', color: 'var(--success-color)' }}>
+                                    <p style={{ margin: '0.2rem 0 0', fontSize: '1.5rem', fontWeight: '800', color: 'var(--success-color)' }}>
                                         S/ {calculateTotalAdvance().toFixed(2)}
                                     </p>
                                 </div>
-                                <div style={{ textAlign: 'right', flex: 1 }}>
-                                    <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--primary-color)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                <div style={{ flex: 1, minWidth: '150px' }}>
+                                    <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--primary-color)', textTransform: 'uppercase', letterSpacing: '1px' }}>
                                         SALDO RESTANTE
                                     </p>
-                                    <p style={{ margin: '0.2rem 0 0', fontSize: '1.5rem', fontWeight: '700', color: 'var(--primary-color)' }}>
+                                    <p style={{ margin: '0.2rem 0 0', fontSize: '1.5rem', fontWeight: '800', color: 'var(--primary-color)' }}>
                                         S/ {calculateBalance().toFixed(2)}
                                     </p>
                                 </div>
@@ -341,16 +345,16 @@ export const NewQuotationModal = ({ isOpen, onClose, onQuotationCreated }) => {
                             type="submit"
                             className="btn btn-primary"
                             disabled={isLoading}
-                            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                            style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}
                         >
                             {isLoading ? (
                                 <>
-                                    <div className="spinner" style={{ width: '16px', height: '16px' }}></div>
+                                    <div className="spinner" style={{ width: '18px', height: '18px' }}></div>
                                     Guardando...
                                 </>
                             ) : (
                                 <>
-                                    <Save size={18} />
+                                    <Save size={20} />
                                     Guardar Cotización
                                 </>
                             )}
