@@ -21,6 +21,7 @@ const transformSupabaseOrder = (dbOrder) => {
         orderNumber: dbOrder.order_number,
         date: dbOrder.date,
         customerName: dbOrder.customer_name,
+        phone: dbOrder.phone,
         deliveryDate: dbOrder.delivery_date,
         status: dbOrder.status || 'Recibido',
         isDelivered: !!dbOrder.is_delivered,
@@ -28,6 +29,7 @@ const transformSupabaseOrder = (dbOrder) => {
         totalAmount: parseFloat(dbOrder.total_amount) || 0,
         totalAdvance: parseFloat(dbOrder.total_advance) || 0,
         totalBalance: parseFloat(dbOrder.total_balance) || 0,
+        notes: dbOrder.notes || '',
         createdAt: new Date(dbOrder.created_at).getTime(),
         items: (dbOrder.order_items || []).map(item => ({
             id: item.id,
@@ -93,13 +95,15 @@ export const SupabaseOrderService = {
                     order_number: orderNumber,
                     date: orderData.date,
                     customer_name: orderData.customerName,
+                    phone: orderData.phone,
                     delivery_date: orderData.deliveryDate,
                     status: orderData.status || 'Recibido',
                     is_delivered: !!orderData.isDelivered,
                     is_paid: !!orderData.isPaid,
                     total_amount: totalAmount,
                     total_advance: totalAdvance,
-                    total_balance: totalBalance
+                    total_balance: totalBalance,
+                    notes: orderData.notes || ''
                 }])
                 .select()
                 .single();
@@ -154,13 +158,15 @@ export const SupabaseOrderService = {
                 .from('orders')
                 .update({
                     customer_name: merged.customerName,
+                    phone: merged.phone,
                     delivery_date: merged.deliveryDate,
                     status: status,
                     is_delivered: !!merged.isDelivered,
                     is_paid: !!merged.isPaid,
                     total_amount: totalAmount,
                     total_advance: totalAdvance,
-                    total_balance: totalBalance
+                    total_balance: totalBalance,
+                    notes: merged.notes || ''
                 })
                 .eq('id', id)
                 .select()
@@ -168,8 +174,30 @@ export const SupabaseOrderService = {
 
             if (updateError) throw updateError;
 
-            // Si necesitas actualizar items aquí, tendrías que implementar lógica adicional 
-            // (borrar y re-insertar o actualizar por ID). Por ahora replicamos Strapi que actualiza cabecera.
+            // 2. Sincronizar items: Borrar existentes e insertar los nuevos actualizados
+            const { error: deleteError } = await supabase
+                .from('order_items')
+                .delete()
+                .eq('order_id', id);
+
+            if (deleteError) throw deleteError;
+
+            if (items.length > 0) {
+                const itemsToInsert = items.map(item => ({
+                    order_id: id,
+                    description: item.description,
+                    quantity: Number(item.quantity) || 0,
+                    unit_price: Number(item.unitPrice) || 0,
+                    amount: (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0),
+                    advance: Number(item.advance) || 0
+                }));
+
+                const { error: itemsError } = await supabase
+                    .from('order_items')
+                    .insert(itemsToInsert);
+
+                if (itemsError) throw itemsError;
+            }
 
             return await SupabaseOrderService.getOrderById(id);
         } catch (error) {

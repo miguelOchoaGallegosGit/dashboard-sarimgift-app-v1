@@ -90,7 +90,7 @@ export const Dashboard = () => {
         <div className="main-content">
             <header style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
                 <h1 className="dashboard-title">
-                    Dashboard
+                    Tablero de pedidos
                 </h1>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
@@ -235,7 +235,22 @@ export const Dashboard = () => {
                         <div style={{ display: 'grid', gap: '1rem', fontSize: '0.9rem' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-muted)' }}>
                                 <Calendar size={16} />
-                                <span>Entrega: <strong style={{ color: 'var(--text-color)' }}>{order.deliveryDate}</strong></span>
+                                <span>Entrega: <strong style={{ color: 'var(--text-color)' }}>
+                                    {(() => {
+                                        if (!order.deliveryDate) return 'No especificada';
+                                        try {
+                                            const date = new Date(order.deliveryDate);
+                                            // Usar split para evitar problemas con zonas horarias si solo es fecha YYYY-MM-DD
+                                            if (order.deliveryDate.includes('T')) {
+                                                return isNaN(date.getTime()) ? order.deliveryDate : date.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                                            }
+                                            const [year, month, day] = order.deliveryDate.split('-');
+                                            return `${day}/${month}/${year}`;
+                                        } catch (e) {
+                                            return order.deliveryDate;
+                                        }
+                                    })()}
+                                </strong></span>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.8rem', paddingTop: '1rem', borderTop: '1px solid var(--glass-border)' }}>
                                 <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>

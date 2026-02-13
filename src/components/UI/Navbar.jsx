@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Package, Sun, Moon } from 'lucide-react';
+import { LayoutDashboard, Package, Inbox, Sun, Moon, FileText } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 
 export const Navbar = () => {
@@ -18,7 +18,15 @@ export const Navbar = () => {
             <div className="navbar-links">
                 <Link to="/" className={`navbar-link ${(isActive('/') || isActive('/dashboard')) ? 'active' : ''}`}>
                     <LayoutDashboard size={20} />
-                    <span>Dashboard</span>
+                    <span>Tablero</span>
+                </Link>
+                <Link to="/bandeja" className={`navbar-link ${isActive('/bandeja') ? 'active' : ''}`}>
+                    <Inbox size={20} />
+                    <span>Bandeja</span>
+                </Link>
+                <Link to="/cotizaciones" className={`navbar-link ${isActive('/cotizaciones') ? 'active' : ''}`}>
+                    <FileText size={20} />
+                    <span>Cotizaciones</span>
                 </Link>
                 <Link to="/inventario" className={`navbar-link ${isActive('/inventario') ? 'active' : ''}`}>
                     <Package size={20} />

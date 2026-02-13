@@ -902,7 +902,8 @@ body {
   overflow-x: auto;
 }
 
-.inventory-table {
+.inventory-table,
+.data-table {
   width: 100%;
   border-collapse: collapse;
   background-color: var(--bg-secondary);
@@ -910,12 +911,14 @@ body {
   overflow: hidden;
 }
 
-.inventory-table thead {
+.inventory-table thead,
+.data-table thead {
   background-color: var(--bg-tertiary);
   border-bottom: 2px solid var(--border-color);
 }
 
-.inventory-table th {
+.inventory-table th,
+.data-table th {
   padding: 1rem;
   text-align: left;
   font-weight: 600;
@@ -925,12 +928,14 @@ body {
   letter-spacing: 0.5px;
 }
 
-.inventory-table tbody tr {
+.inventory-table tbody tr,
+.data-table tbody tr {
   border-bottom: 1px solid var(--border-color);
   transition: background-color 0.2s;
 }
 
-.inventory-table tbody tr:hover {
+.inventory-table tbody tr:hover,
+.data-table tbody tr:hover {
   background-color: var(--bg-tertiary);
 }
 
@@ -938,7 +943,8 @@ body {
   background-color: rgba(239, 68, 68, 0.05);
 }
 
-.inventory-table td {
+.inventory-table td,
+.data-table td {
   padding: 1rem;
   font-size: 0.95rem;
 }
