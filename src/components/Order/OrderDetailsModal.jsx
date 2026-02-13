@@ -45,12 +45,14 @@ export const OrderDetailsModal = ({ order, onClose, onUpdate }) => {
         if (isEditing) return; // No permitir cambios de estado mientras se edita
         setIsSaving(true);
         try {
-            // If we are starting the process
-            if (key === 'status' && value === 'En Proceso') {
-                const updated = await OrderService.updateOrder(currentOrder.id, { status: 'En Proceso' });
+            // Manejo de transiciones de estado explícitas
+            if (key === 'status') {
+                const updated = await OrderService.updateOrder(currentOrder.id, { status: value });
                 setCurrentOrder(updated);
                 onUpdate(updated);
                 setIsSaving(false);
+                const message = value === 'En Proceso' ? '🚀 Proceso iniciado' : '✅ Proceso terminado';
+                showToast(message);
                 return;
             }
 
@@ -59,7 +61,12 @@ export const OrderDetailsModal = ({ order, onClose, onUpdate }) => {
             const updated = await OrderService.updateOrder(currentOrder.id, updates);
             setCurrentOrder(updated);
             onUpdate(updated);
-            showToast('✅ Estado actualizado correctamente');
+
+            if (updated.status === 'Cerrado' || updated.status === 'Cerrado y Pagado') {
+                showToast('🎉 Pedido cerrado y pagado correctamente');
+            } else {
+                showToast('✅ Estado actualizado correctamente');
+            }
         } catch (error) {
             console.error('Error updating order status:', error);
             showToast('❌ Error al actualizar el estado: ' + error.message, 'error');
@@ -150,7 +157,7 @@ export const OrderDetailsModal = ({ order, onClose, onUpdate }) => {
     };
 
     const isClosed = currentOrder.status === 'Cerrado' || currentOrder.status === 'Cerrado y Pagado';
-    const canEdit = currentOrder.status === 'En Proceso' && !currentOrder.isDelivered && !currentOrder.isPaid;
+    const canEdit = (currentOrder.status === 'En Proceso' || currentOrder.status === 'Terminado') && !isClosed;
 
     return (
         <div style={{
@@ -207,7 +214,7 @@ export const OrderDetailsModal = ({ order, onClose, onUpdate }) => {
 
                 {/* Workflow Actions / Edit Footer Replacement */}
                 {!isClosed && (
-                    <div style={{ background: 'var(--bg-tertiary)', borderRadius: '12px', padding: '1rem', marginBottom: '2rem', display: 'flex', gap: '1rem', flexWrap: 'wrap', border: '1px solid var(--border-color)' }}>
+                    <div style={{ background: 'var(--bg-tertiary)', borderRadius: '12px', padding: '1rem', marginBottom: '2rem', display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center', border: '1px solid var(--border-color)' }}>
                         {isEditing ? (
                             <div style={{ display: 'flex', gap: '1rem', width: '100%', justifyContent: 'flex-end' }}>
                                 <button className="btn btn-secondary" onClick={handleCancelEdit}>
@@ -228,7 +235,17 @@ export const OrderDetailsModal = ({ order, onClose, onUpdate }) => {
                                     </button>
                                 )}
 
-                                {(currentOrder.status === 'En Proceso' || currentOrder.status === 'Recibido') && (
+                                {currentOrder.status === 'En Proceso' && (
+                                    <button
+                                        className="btn btn-success"
+                                        style={{ backgroundColor: 'var(--success-color)', color: 'white' }}
+                                        onClick={() => handleStatusChange('status', 'Terminado')}
+                                    >
+                                        <CheckCircle size={18} /> Terminar Proceso
+                                    </button>
+                                )}
+
+                                {currentOrder.status === 'Terminado' && (
                                     <>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: currentOrder.isDelivered ? 'var(--success-bg)' : 'transparent', padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                                             <input
@@ -255,17 +272,17 @@ export const OrderDetailsModal = ({ order, onClose, onUpdate }) => {
                                                 <CreditCard size={18} /> Pagado
                                             </label>
                                         </div>
-
-                                        {canEdit && (
-                                            <button
-                                                className="btn btn-outline"
-                                                onClick={handleStartEdit}
-                                                style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-                                            >
-                                                <Edit2 size={18} /> Editar Pedido
-                                            </button>
-                                        )}
                                     </>
+                                )}
+
+                                {canEdit && (
+                                    <button
+                                        className="btn btn-outline"
+                                        onClick={handleStartEdit}
+                                        style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                                    >
+                                        <Edit2 size={18} /> Editar Pedido
+                                    </button>
                                 )}
                             </>
                         )}

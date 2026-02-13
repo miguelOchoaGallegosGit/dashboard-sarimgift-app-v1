@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, X, Save } from 'lucide-react';
 import { OrderService } from '../../services';
+import { useToast } from '../../context/ToastContext';
 
 export const NewOrderModal = ({ isOpen, onClose, onOrderCreated }) => {
+    const { showToast } = useToast();
     const [formData, setFormData] = useState({
         customerName: '',
         date: new Date().toISOString().split('T')[0],
@@ -13,7 +15,6 @@ export const NewOrderModal = ({ isOpen, onClose, onOrderCreated }) => {
         { id: Date.now(), description: '', quantity: 1, unitPrice: 0, amount: 0, advance: 0 }
     ]);
 
-    const [notification, setNotification] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
 
     const handleHeadChange = (e) => {
@@ -56,7 +57,7 @@ export const NewOrderModal = ({ isOpen, onClose, onOrderCreated }) => {
         if (isSaving) return;
 
         if (!formData.customerName || !formData.deliveryDate) {
-            setNotification({ type: 'error', message: 'Por favor complete los datos del cliente y entrega.' });
+            showToast('⚠️ Por favor complete los datos del cliente y entrega.', 'warning');
             return;
         }
 
@@ -72,15 +73,14 @@ export const NewOrderModal = ({ isOpen, onClose, onOrderCreated }) => {
                     advance: Number(i.advance)
                 }))
             });
-            setNotification({ type: 'success', message: '¡Pedido registrado correctamente!' });
-            setTimeout(() => {
-                setIsSaving(false);
-                onOrderCreated(newOrder);
-                handleClose();
-            }, 1500);
+
+            showToast('🎉 ¡Pedido registrado correctamente!');
+            setIsSaving(false);
+            onOrderCreated(newOrder);
+            handleClose();
         } catch (error) {
             console.error(error);
-            setNotification({ type: 'error', message: error.message || 'Hubo un error al guardar en la Base de Datos.' });
+            showToast('❌ Error al guardar: ' + (error.message || 'Hubo un error en la base de datos'), 'error');
             setIsSaving(false);
         }
     };
@@ -92,7 +92,7 @@ export const NewOrderModal = ({ isOpen, onClose, onOrderCreated }) => {
             deliveryDate: '',
         });
         setItems([{ id: Date.now(), description: '', quantity: 1, unitPrice: 0, amount: 0, advance: 0 }]);
-        setNotification(null);
+
         onClose();
     };
 
@@ -130,11 +130,7 @@ export const NewOrderModal = ({ isOpen, onClose, onOrderCreated }) => {
                     <p style={{ color: 'var(--text-muted)', marginTop: '0.5rem', fontSize: '1rem' }}>Ingresa la información básica y los items para el nuevo servicio.</p>
                 </header>
 
-                {notification && (
-                    <div className={`notification ${notification.type}`}>
-                        {notification.message}
-                    </div>
-                )}
+
 
                 <form onSubmit={handleSubmit} className="modal-body">
                     <div className="order-header-grid">
@@ -146,17 +142,6 @@ export const NewOrderModal = ({ isOpen, onClose, onOrderCreated }) => {
                                 className="input-field"
                                 placeholder="Nombre completo..."
                                 value={formData.customerName}
-                                onChange={handleHeadChange}
-                                required
-                            />
-                        </div>
-                        <div className="filter-group">
-                            <label>Fecha de Registro</label>
-                            <input
-                                type="date"
-                                name="date"
-                                className="input-field"
-                                value={formData.date}
                                 onChange={handleHeadChange}
                                 required
                             />

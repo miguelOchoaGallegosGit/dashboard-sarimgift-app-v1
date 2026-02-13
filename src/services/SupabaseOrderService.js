@@ -149,10 +149,13 @@ export const SupabaseOrderService = {
             const totalAdvance = items.reduce((sum, item) => sum + (Number(item.advance) || 0), 0);
             const totalBalance = totalAmount - totalAdvance;
 
-            // Lógica de estado igual a la de Strapi
+            // Lógica de transición de estados
             let status = merged.status;
-            if (merged.isDelivered && merged.isPaid) status = 'Cerrado';
-            else if (status === 'Cerrado' && (!merged.isDelivered || !merged.isPaid)) status = 'En Proceso';
+            if (merged.isDelivered && merged.isPaid) {
+                status = 'Cerrado';
+            } else if (status === 'Cerrado' && (!merged.isDelivered || !merged.isPaid)) {
+                status = 'Terminado';
+            }
 
             const { data: updatedOrder, error: updateError } = await supabase
                 .from('orders')

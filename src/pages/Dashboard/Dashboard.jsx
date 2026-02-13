@@ -53,8 +53,11 @@ export const Dashboard = () => {
             // "Cerrado y Pagado": tiene ambos checks
             matchStatus = order.isDelivered === true && order.isPaid === true;
         } else if (filters.status === 'En Proceso') {
-            // "En Proceso" puro: sin entrega ni pago marcado
+            // "En Proceso" puro: sin entrega ni pago marcado, y estado es En Proceso
             matchStatus = order.status === 'En Proceso' && !order.isDelivered && !order.isPaid;
+        } else if (filters.status === 'Terminado') {
+            // "Terminado": estado es Terminado y al menos uno falta
+            matchStatus = order.status === 'Terminado' && (!order.isDelivered || !order.isPaid);
         } else if (filters.status === 'Recibido') {
             matchStatus = order.status === 'Recibido' && !order.isDelivered && !order.isPaid;
         } else {
@@ -77,6 +80,7 @@ export const Dashboard = () => {
         if (status === 'Cerrado' || status === 'Cerrado y Pagado') return 'var(--success-color)';
         switch (status) {
             case 'Entregado': return 'var(--primary-color)';
+            case 'Terminado': return 'var(--info-color)';
             case 'En Proceso': return 'var(--warning-color)';
             default: return 'var(--text-muted)';
         }
@@ -144,6 +148,7 @@ export const Dashboard = () => {
                             <option value="">Todos los estados</option>
                             <option value="Recibido">Recibido</option>
                             <option value="En Proceso">En Proceso</option>
+                            <option value="Terminado">Terminado</option>
                             <option value="Entregado">Entregado</option>
                             <option value="Cerrado y Pagado">Cerrado y Pagado</option>
                         </select>
