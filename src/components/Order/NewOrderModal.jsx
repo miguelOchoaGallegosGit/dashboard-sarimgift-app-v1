@@ -147,7 +147,7 @@ export const NewOrderModal = ({ isOpen, onClose, onOrderCreated }) => {
                             />
                         </div>
                         <div className="filter-group">
-                            <label>Fecha Programada de Entrega</label>
+                            <label>Fecha de Entrega</label>
                             <input
                                 type="date"
                                 name="deliveryDate"

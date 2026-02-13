@@ -142,7 +142,7 @@ export const OrderEntry = () => {
                     </div>
                     <div className="filter-group">
                         <label style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: '600', whiteSpace: 'nowrap' }}>
-                            Fecha Programada de Entrega
+                            Fecha de Entrega
                         </label>
                         <input
                             type="date"
