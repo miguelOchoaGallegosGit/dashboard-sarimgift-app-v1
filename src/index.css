@@ -599,21 +599,16 @@ body {
   color: var(--text-muted);
 }
 
-.hide-on-mobile {
-  display: inline-block;
-}
-
-.hide-on-desktop {
-  display: none;
-}
-
-@media (max-width: 1024px) {
+/* Utilitarios de Visibilidad */
+@media (max-width: 768px) {
   .hide-on-mobile {
     display: none !important;
   }
+}
 
+@media (min-width: 769px) {
   .hide-on-desktop {
-    display: block !important;
+    display: none !important;
   }
 }
 
@@ -821,7 +816,7 @@ body {
 }
 
 /* Responsive - Tablet */
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
   .order-item-row {
     grid-template-columns: 80px 1fr 100px 100px;
     gap: 0.75rem;
@@ -991,7 +986,7 @@ body {
 }
 
 /* Mobile: Cards instead of table */
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
   .inventory-table-container {
     display: none;
   }
@@ -1002,7 +997,7 @@ body {
   display: none;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
   .inventory-cards-container {
     display: flex;
     flex-direction: column;
@@ -1029,7 +1024,7 @@ body {
 }
 
 /* Cotizaciones Responsive */
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
 
   .quotations-table-container,
   .bandeja-table-container {
@@ -1044,7 +1039,7 @@ body {
   }
 }
 
-@media (min-width: 1025px) {
+@media (min-width: 769px) {
 
   .quotations-cards-container,
   .bandeja-cards-container {
@@ -1480,6 +1475,57 @@ body {
   grid-template-columns: 80px 1fr 130px 130px 130px auto;
 }
 
+/* Nuevo sistema de grilla para modales (Desktop) */
+@media (min-width: 769px) {
+  .items-list.grid-style {
+    gap: 0;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--bg-secondary);
+  }
+
+  .items-list.grid-style .item-row.quotation {
+    grid-template-columns: 60px 1fr 100px 100px 100px 110px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border-color);
+    border-radius: 0;
+    padding: 0.5rem 1rem;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  /* Ajuste para cuando hay botón de eliminar (NewQuotationModal) */
+  .items-list.grid-style.with-delete .item-row.quotation {
+    grid-template-columns: 60px 1fr 100px 100px 100px 50px;
+    gap: 0.75rem;
+  }
+
+  .items-list.grid-style .item-row.quotation:last-child {
+    border-bottom: none;
+  }
+
+  .items-list.grid-style .item-row.quotation:hover {
+    background: var(--bg-tertiary);
+    box-shadow: none;
+  }
+
+  .items-list.grid-style .input-field {
+    padding: 0.4rem 0.6rem;
+    height: 36px;
+    background: var(--bg-primary);
+  }
+
+  .items-list.grid-style .filter-group {
+    gap: 0;
+  }
+
+  .items-list.grid-style .input-label.hide-on-desktop {
+    display: none !important;
+  }
+}
+
 .item-row:hover {
   border-color: var(--primary-color);
   box-shadow: var(--shadow-sm);
@@ -1556,7 +1602,7 @@ body {
   }
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
 
   .item-row,
   .item-row.quotation {

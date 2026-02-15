@@ -216,10 +216,20 @@ export const NewQuotationModal = ({ isOpen, onClose, onQuotationCreated }) => {
                                 </button>
                             </div>
 
-                            <div className="items-list">
+                            <div className="items-list grid-style with-delete">
+                                {/* Header del grid para Desktop */}
+                                <div className="item-row quotation hide-on-mobile" style={{ background: 'var(--bg-tertiary)', border: 'none', borderRadius: 0, padding: '0.75rem 1rem', borderBottom: '2px solid var(--border-color)', gap: '0.75rem' }}>
+                                    <div style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', textAlign: 'center' }}>Cant.</div>
+                                    <div style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Descripción</div>
+                                    <div style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', textAlign: 'right' }}>P. Unit (S/)</div>
+                                    <div style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', textAlign: 'right' }}>Subtotal (S/)</div>
+                                    <div style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', textAlign: 'right' }}>Adelanto (S/)</div>
+                                    <div style={{ padding: '0 0.5rem' }}></div> {/* Espacio para el botón de borrar */}
+                                </div>
+
                                 {items.map((item) => (
-                                    <div key={item.id} className="item-row" style={{ position: 'relative' }}>
-                                        <div className="filter-group" style={{ width: '80px' }}>
+                                    <div key={item.id} className="item-row quotation" style={{ position: 'relative' }}>
+                                        <div className="filter-group">
                                             <label className="input-label hide-on-desktop">Cant.</label>
                                             <input
                                                 type="number"
@@ -230,7 +240,7 @@ export const NewQuotationModal = ({ isOpen, onClose, onQuotationCreated }) => {
                                                 style={{ textAlign: 'center' }}
                                             />
                                         </div>
-                                        <div className="filter-group" style={{ flex: 1 }}>
+                                        <div className="filter-group">
                                             <label className="input-label hide-on-desktop">Descripción</label>
                                             <input
                                                 type="text"
@@ -240,7 +250,7 @@ export const NewQuotationModal = ({ isOpen, onClose, onQuotationCreated }) => {
                                                 placeholder="Ej. Taza personalizada, Camisa..."
                                             />
                                         </div>
-                                        <div className="filter-group" style={{ width: '130px' }}>
+                                        <div className="filter-group">
                                             <label className="input-label hide-on-desktop">P. Unit. (S/)</label>
                                             <input
                                                 type="number"
@@ -252,7 +262,7 @@ export const NewQuotationModal = ({ isOpen, onClose, onQuotationCreated }) => {
                                                 style={{ textAlign: 'right' }}
                                             />
                                         </div>
-                                        <div className="filter-group" style={{ width: '130px' }}>
+                                        <div className="filter-group">
                                             <label className="input-label hide-on-desktop">Subtotal (S/)</label>
                                             <div style={{
                                                 height: '48px',
@@ -270,7 +280,7 @@ export const NewQuotationModal = ({ isOpen, onClose, onQuotationCreated }) => {
                                                 {calculateItemTotal(item).toFixed(2)}
                                             </div>
                                         </div>
-                                        <div className="filter-group" style={{ width: '130px' }}>
+                                        <div className="filter-group">
                                             <label className="input-label hide-on-desktop">Adelanto (S/)</label>
                                             <input
                                                 type="number"

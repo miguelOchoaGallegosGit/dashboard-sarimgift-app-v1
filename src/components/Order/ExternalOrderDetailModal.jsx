@@ -132,10 +132,19 @@ export const ExternalOrderDetailModal = ({ order, onClose, onUpdate }) => {
                             Productos del Pedido
                         </h3>
 
-                        <div className="items-list">
+                        <div className="items-list grid-style">
+                            {/* Header del grid para Desktop */}
+                            <div className="item-row quotation hide-on-mobile" style={{ background: 'var(--bg-tertiary)', border: 'none', borderRadius: 0, padding: '0.75rem 1rem', borderBottom: '2px solid var(--border-color)' }}>
+                                <div style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', textAlign: 'center' }}>Cant.</div>
+                                <div style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Descripción</div>
+                                <div style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', textAlign: 'right' }}>P. Unit (S/)</div>
+                                <div style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', textAlign: 'right' }}>Subtotal (S/)</div>
+                                <div style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', textAlign: 'right' }}>Adelanto (S/)</div>
+                            </div>
+
                             {items.map((item) => (
                                 <div key={item.id} className="item-row quotation">
-                                    <div className="filter-group" style={{ width: '80px' }}>
+                                    <div className="filter-group">
                                         <label className="input-label hide-on-desktop">Cant.</label>
                                         <input
                                             type="number"
@@ -146,13 +155,13 @@ export const ExternalOrderDetailModal = ({ order, onClose, onUpdate }) => {
                                             style={{ textAlign: 'center' }}
                                         />
                                     </div>
-                                    <div className="filter-group" style={{ flex: 1 }}>
+                                    <div className="filter-group">
                                         <label className="input-label hide-on-desktop">Descripción</label>
                                         <div className="input-field" style={{ background: 'var(--bg-tertiary)', fontWeight: '600', display: 'flex', alignItems: 'center' }}>
                                             {item.product}
                                         </div>
                                     </div>
-                                    <div className="filter-group" style={{ width: '130px' }}>
+                                    <div className="filter-group">
                                         <label className="input-label hide-on-desktop">P. Unit. (S/)</label>
                                         <input
                                             type="number"
@@ -164,7 +173,7 @@ export const ExternalOrderDetailModal = ({ order, onClose, onUpdate }) => {
                                             style={{ textAlign: 'right' }}
                                         />
                                     </div>
-                                    <div className="filter-group" style={{ width: '130px' }}>
+                                    <div className="filter-group">
                                         <label className="input-label hide-on-desktop">Subtotal (S/)</label>
                                         <div style={{
                                             height: '48px',
@@ -182,7 +191,7 @@ export const ExternalOrderDetailModal = ({ order, onClose, onUpdate }) => {
                                             {(item.quantity * item.unitPrice).toFixed(2)}
                                         </div>
                                     </div>
-                                    <div className="filter-group" style={{ width: '130px' }}>
+                                    <div className="filter-group">
                                         <label className="input-label hide-on-desktop">Adelanto (S/)</label>
                                         <input
                                             type="number"

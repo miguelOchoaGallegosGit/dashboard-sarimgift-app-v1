@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { QuotationService } from '../../services/QuotationService';
-import { Search, Plus, Eye, ChevronLeft, ChevronRight, Settings, Filter, Trash2, Edit } from 'lucide-react';
+import { Search, Plus, Eye, ChevronLeft, ChevronRight, Settings, Filter, Trash2, Edit, Send } from 'lucide-react';
 import { QuotationDetailModal } from '../../components/Quotation/QuotationDetailModal';
 import { NewQuotationModal } from '../../components/Quotation/NewQuotationModal';
 import { RejectQuotationModal } from '../../components/Quotation/RejectQuotationModal';
@@ -12,6 +12,7 @@ export const Cotizaciones = () => {
     const [isNewQuotationModalOpen, setIsNewQuotationModalOpen] = useState(false);
     const [rejectModal, setRejectModal] = useState({ isOpen: false, quotation: null });
     const [isLoading, setIsLoading] = useState(true);
+    const [isAutoSend, setIsAutoSend] = useState(false);
 
     const [filters, setFilters] = useState({
         search: '',
@@ -108,6 +109,16 @@ export const Cotizaciones = () => {
 
     const handleRejectQuotation = (quotation) => {
         setRejectModal({ isOpen: true, quotation });
+    };
+
+    const handleSendQuotation = (quotation) => {
+        setIsAutoSend(true);
+        setSelectedQuotation(quotation);
+    };
+
+    const handleCloseDetail = () => {
+        setSelectedQuotation(null);
+        setIsAutoSend(false);
     };
 
     const confirmRejectQuotation = async (rejectionReason) => {
@@ -364,14 +375,24 @@ export const Cotizaciones = () => {
                                                 </button>
 
                                                 {q.status === 'REGISTRADO' && (
-                                                    <button
-                                                        onClick={() => handleRejectQuotation(q)}
-                                                        className="btn-icon"
-                                                        title="Rechazar Cotización"
-                                                        style={{ color: 'var(--danger-color)' }}
-                                                    >
-                                                        <Trash2 size={18} />
-                                                    </button>
+                                                    <>
+                                                        <button
+                                                            onClick={() => handleSendQuotation(q)}
+                                                            className="btn-icon"
+                                                            title="Enviar Cotización"
+                                                            style={{ color: 'var(--success-color)' }}
+                                                        >
+                                                            <Send size={18} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleRejectQuotation(q)}
+                                                            className="btn-icon"
+                                                            title="Rechazar Cotización"
+                                                            style={{ color: 'var(--danger-color)' }}
+                                                        >
+                                                            <Trash2 size={18} />
+                                                        </button>
+                                                    </>
                                                 )}
                                             </div>
                                         </td>
@@ -423,13 +444,23 @@ export const Cotizaciones = () => {
                                     {q.status === 'REGISTRADO' ? <Edit size={16} /> : <Eye size={16} />}
                                 </button>
                                 {q.status === 'REGISTRADO' && (
-                                    <button
-                                        onClick={() => handleRejectQuotation(q)}
-                                        className="btn-icon"
-                                        style={{ background: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger-color)' }}
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
+                                    <>
+                                        <button
+                                            onClick={() => handleSendQuotation(q)}
+                                            className="btn-icon"
+                                            style={{ background: 'rgba(34, 197, 94, 0.1)', color: 'var(--success-color)' }}
+                                            title="Enviar"
+                                        >
+                                            <Send size={16} />
+                                        </button>
+                                        <button
+                                            onClick={() => handleRejectQuotation(q)}
+                                            className="btn-icon"
+                                            style={{ background: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger-color)' }}
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </>
                                 )}
                             </div>
                         </div>
@@ -489,8 +520,9 @@ export const Cotizaciones = () => {
             {selectedQuotation && (
                 <QuotationDetailModal
                     quotation={selectedQuotation}
-                    onClose={() => setSelectedQuotation(null)}
+                    onClose={handleCloseDetail}
                     onUpdate={handleQuotationUpdated}
+                    autoSend={isAutoSend}
                 />
             )}
 

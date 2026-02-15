@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { X, Save, Ban, CheckCircle, XCircle, ShoppingBag } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, Save, Ban, CheckCircle, XCircle, ShoppingBag, Send, Share2, Download } from 'lucide-react';
+import html2canvas from 'html2canvas';
 import { QuotationService } from '../../services/QuotationService';
 import { ConfirmActionModal } from './ConfirmActionModal';
 import { RejectQuotationModal } from './RejectQuotationModal';
 import { useToast } from '../../context/ToastContext';
 
-export const QuotationDetailModal = ({ quotation, onClose, onUpdate }) => {
+
+export const QuotationDetailModal = ({ quotation, onClose, onUpdate, autoSend = false }) => {
     const { showToast } = useToast();
     const [items, setItems] = useState(quotation.items || []);
     const [isLoading, setIsLoading] = useState(false);
@@ -16,6 +18,9 @@ export const QuotationDetailModal = ({ quotation, onClose, onUpdate }) => {
     const [showConfirmProcess, setShowConfirmProcess] = useState(false);
     const [showRejectModal, setShowRejectModal] = useState(false);
     const [linkedOrderNumber, setLinkedOrderNumber] = useState(null);
+    const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+    const contentRef = useRef(null);
+    const hasAutoSent = useRef(false);
 
     // Cerrar con ESC
     useEffect(() => {
@@ -182,6 +187,70 @@ export const QuotationDetailModal = ({ quotation, onClose, onUpdate }) => {
         }
     };
 
+    // Auto-enviar si se activa desde la grilla
+    useEffect(() => {
+        if (autoSend && !hasAutoSent.current) {
+            hasAutoSent.current = true;
+            handleSendImage();
+        }
+    }, [autoSend]);
+
+    const handleSendImage = async () => {
+        if (!contentRef.current) return;
+        setIsGeneratingImage(true);
+
+        try {
+            // Un pequeño delay para asegurar que el DOM esté listo y no se vea el botón de carga
+            await new Promise(resolve => setTimeout(resolve, 300));
+
+            const canvas = await html2canvas(contentRef.current, {
+                scale: 2, // Mejor calidad
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#f8fafc', // Color de fondo de la app
+                onclone: (clonedDoc) => {
+                    // Ocultar elementos innecesarios en la imagen
+                    const elementsToHide = clonedDoc.querySelectorAll('.hide-on-capture');
+                    elementsToHide.forEach(el => el.style.display = 'none');
+                }
+            });
+
+            const image = canvas.toDataURL('image/png');
+            const fileName = `Cotizacion_${quotation.quotationNumber}_${quotation.customerName.replace(/\s+/g, '_')}.png`;
+
+            // Detectar si es móvil para usar Web Share API
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+            if (isMobile && navigator.share) {
+                const blob = await (await fetch(image)).blob();
+                const file = new File([blob], fileName, { type: 'image/png' });
+
+                try {
+                    await navigator.share({
+                        files: [file],
+                        title: `Cotización ${quotation.quotationNumber}`,
+                        text: `Hola ${quotation.customerName}, adjunto tu cotización.`
+                    });
+                } catch (shareError) {
+                    console.log('Error sharing:', shareError);
+                    // Si falla el share (ej. el usuario canceló), no hacemos nada o descargamos como fallback
+                }
+            } else {
+                // Desktop: Descarga directa
+                const link = document.createElement('a');
+                link.href = image;
+                link.download = fileName;
+                link.click();
+                showToast('✅ Imagen generada y lista para enviar');
+            }
+        } catch (error) {
+            console.error('Error generating image:', error);
+            showToast('❌ Error al generar la imagen', 'error');
+        } finally {
+            setIsGeneratingImage(false);
+        }
+    };
+
     return (
         <>
             <div className="modal-overlay" onClick={handleClose}>
@@ -252,12 +321,32 @@ export const QuotationDetailModal = ({ quotation, onClose, onUpdate }) => {
                                 )}
                             </div>
                         </div>
-                        <button onClick={handleClose} className="btn-icon">
-                            <X size={24} />
-                        </button>
+                        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                            <button
+                                onClick={handleSendImage}
+                                className="btn btn-secondary hide-on-capture"
+                                title="Enviar por WhatsApp / Descargar Imagen"
+                                disabled={isGeneratingImage}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
+                                    backgroundColor: 'var(--primary-light)',
+                                    color: 'var(--primary-color)',
+                                    border: '1px solid var(--primary-color)',
+                                    padding: '0.5rem 1rem'
+                                }}
+                            >
+                                {isGeneratingImage ? <div className="spinner modal-spinner"></div> : <Send size={18} />}
+                                <span className="hide-on-mobile">Enviar</span>
+                            </button>
+                            <button onClick={handleClose} className="btn-icon">
+                                <X size={24} />
+                            </button>
+                        </div>
                     </div>
 
-                    <div className="modal-body">
+                    <div className="modal-body" ref={contentRef}>
                         {/* Información del Cliente */}
                         <div className="glass-panel" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
                             <h3 style={{ margin: '0 0 1rem 0', fontSize: '1.1rem', fontWeight: '600', color: 'var(--primary-color)', textTransform: 'uppercase', letterSpacing: '1px' }}>
@@ -293,10 +382,20 @@ export const QuotationDetailModal = ({ quotation, onClose, onUpdate }) => {
                                 Productos
                             </h3>
 
-                            <div className="items-list">
+                            <div className="items-list grid-style">
+                                {/* Header del grid para Desktop */}
+                                <div className="item-row quotation hide-on-mobile" style={{ background: 'var(--bg-tertiary)', border: 'none', borderRadius: 0, padding: '0.75rem 1rem', borderBottom: '2px solid var(--border-color)' }}>
+                                    <div style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', textAlign: 'center' }}>Cant.</div>
+                                    <div style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Descripción</div>
+                                    <div style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', textAlign: 'right' }}>P. Unit (S/)</div>
+                                    <div style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', textAlign: 'right' }}>Adelanto (S/)</div>
+                                    <div style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', textAlign: 'right' }}>Entrega (S/)</div>
+                                    <div style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', textAlign: 'right' }}>Total (S/)</div>
+                                </div>
+
                                 {items.map((item) => (
-                                    <div key={item.id} className="item-row">
-                                        <div className="filter-group" style={{ width: '80px' }}>
+                                    <div key={item.id} className="item-row quotation">
+                                        <div className="filter-group">
                                             <label className="input-label hide-on-desktop">Cant.</label>
                                             {isEditable ? (
                                                 <input
@@ -313,13 +412,13 @@ export const QuotationDetailModal = ({ quotation, onClose, onUpdate }) => {
                                                 </div>
                                             )}
                                         </div>
-                                        <div className="filter-group" style={{ flex: 1 }}>
+                                        <div className="filter-group">
                                             <label className="input-label hide-on-desktop">Descripción</label>
                                             <div className="input-field" style={{ background: 'var(--bg-tertiary)', fontWeight: '600', display: 'flex', alignItems: 'center' }}>
                                                 {item.product}
                                             </div>
                                         </div>
-                                        <div className="filter-group" style={{ width: '130px' }}>
+                                        <div className="filter-group">
                                             <label className="input-label hide-on-desktop">P. Unit. (S/)</label>
                                             {isEditable ? (
                                                 <input
@@ -337,7 +436,7 @@ export const QuotationDetailModal = ({ quotation, onClose, onUpdate }) => {
                                                 </div>
                                             )}
                                         </div>
-                                        <div className="filter-group" style={{ width: '130px' }}>
+                                        <div className="filter-group">
                                             <label className="input-label hide-on-desktop">Adelanto (S/)</label>
                                             {isEditable ? (
                                                 <input
@@ -355,7 +454,7 @@ export const QuotationDetailModal = ({ quotation, onClose, onUpdate }) => {
                                                 </div>
                                             )}
                                         </div>
-                                        <div className="filter-group" style={{ width: '130px' }}>
+                                        <div className="filter-group">
                                             <label className="input-label hide-on-desktop">Entrega (S/)</label>
                                             {isEditable ? (
                                                 <input
@@ -373,7 +472,7 @@ export const QuotationDetailModal = ({ quotation, onClose, onUpdate }) => {
                                                 </div>
                                             )}
                                         </div>
-                                        <div className="filter-group" style={{ width: '130px' }}>
+                                        <div className="filter-group">
                                             <label className="input-label hide-on-desktop">Total (S/)</label>
                                             <div style={{
                                                 height: '48px',
