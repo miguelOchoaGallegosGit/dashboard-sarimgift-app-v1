@@ -10,6 +10,7 @@ import { useToast } from '../../context/ToastContext';
 export const QuotationDetailModal = ({ quotation, onClose, onUpdate, autoSend = false }) => {
     const { showToast } = useToast();
     const [items, setItems] = useState(quotation.items || []);
+    const [advancePayment, setAdvancePayment] = useState(quotation.advancePayment || 0);
     const [isLoading, setIsLoading] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
     const [isRejecting, setIsRejecting] = useState(false);
@@ -78,6 +79,7 @@ export const QuotationDetailModal = ({ quotation, onClose, onUpdate, autoSend = 
     const handleSaveChanges = async () => {
         setIsLoading(true);
         try {
+            // Update items
             const updatePromises = items.map(async (item) => {
                 const originalItem = quotation.items.find(o => o.id === item.id);
                 if (!originalItem) return null;
@@ -85,14 +87,12 @@ export const QuotationDetailModal = ({ quotation, onClose, onUpdate, autoSend = 
                 const hasChanged =
                     originalItem.quantity !== item.quantity ||
                     originalItem.unitPrice !== item.unitPrice ||
-                    originalItem.advancePayment !== item.advancePayment ||
                     originalItem.shippingCost !== item.shippingCost;
 
                 if (hasChanged) {
                     return await QuotationService.updateQuotationItem(item.id, {
                         quantity: item.quantity,
                         unitPrice: item.unitPrice,
-                        advancePayment: item.advancePayment,
                         shippingCost: item.shippingCost
                     });
                 }
@@ -100,6 +100,21 @@ export const QuotationDetailModal = ({ quotation, onClose, onUpdate, autoSend = 
             });
 
             await Promise.all(updatePromises);
+
+            // Update Quotation Header (advance payment)
+            if (quotation.advancePayment !== advancePayment) {
+                const total = calculateTotal();
+                const advance = parseFloat(advancePayment) || 0;
+                if (advance > total) {
+                    showToast('⚠️ El adelanto no puede superar el monto total (S/ ' + total.toFixed(2) + ')', 'warning');
+                    setIsLoading(false);
+                    return;
+                }
+
+                await QuotationService.updateQuotation(quotation.id, {
+                    advancePayment: advance
+                });
+            }
 
             const updatedQuotation = await QuotationService.getQuotationById(quotation.id);
             setHasChanges(false);
@@ -157,7 +172,7 @@ export const QuotationDetailModal = ({ quotation, onClose, onUpdate, autoSend = 
     };
 
     const calculateTotalAdvance = () => {
-        return items.reduce((sum, item) => sum + (parseFloat(item.advancePayment) || 0), 0);
+        return parseFloat(advancePayment) || 0;
     };
 
     const calculateBalance = () => {
@@ -204,14 +219,28 @@ export const QuotationDetailModal = ({ quotation, onClose, onUpdate, autoSend = 
             await new Promise(resolve => setTimeout(resolve, 300));
 
             const canvas = await html2canvas(contentRef.current, {
-                scale: 2, // Mejor calidad
                 useCORS: true,
+                scale: 3, // Mayor resolución para mejor lectura
+                backgroundColor: '#f8f9fa',
                 logging: false,
-                backgroundColor: '#f8fafc', // Color de fondo de la app
+                windowWidth: 1280, // Forzar ancho de escritorio durante la captura
+                windowHeight: contentRef.current.scrollHeight,
                 onclone: (clonedDoc) => {
                     // Ocultar elementos innecesarios en la imagen
                     const elementsToHide = clonedDoc.querySelectorAll('.hide-on-capture');
                     elementsToHide.forEach(el => el.style.display = 'none');
+
+                    // Forzar modo grilla en la captura (desktop)
+                    const modalContent = clonedDoc.querySelector('.modal-content');
+                    if (modalContent) {
+                        modalContent.classList.add('capturing-mode');
+                        modalContent.style.width = '1100px';
+                        modalContent.style.maxWidth = '1100px';
+                        modalContent.style.padding = '3rem';
+                        modalContent.style.margin = '0 auto';
+                        modalContent.style.borderRadius = '0';
+                        modalContent.style.boxShadow = 'none';
+                    }
                 }
             });
 
@@ -382,14 +411,50 @@ export const QuotationDetailModal = ({ quotation, onClose, onUpdate, autoSend = 
                                 Productos
                             </h3>
 
+                            {/* Campo de Adelanto Global */}
+                            <div style={{
+                                marginBottom: '1.5rem',
+                                padding: '1rem',
+                                background: 'white',
+                                borderRadius: '12px',
+                                border: '1px solid var(--border-color)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '1rem',
+                                flexWrap: 'wrap'
+                            }}>
+                                <div className="filter-group" style={{ margin: 0, minWidth: '200px' }}>
+                                    <label className="input-label" style={{ fontWeight: '700', color: 'var(--success-color)' }}>ADELANTO (S/)</label>
+                                    {isEditable ? (
+                                        <input
+                                            type="number"
+                                            value={advancePayment}
+                                            onChange={(e) => {
+                                                setAdvancePayment(e.target.value);
+                                                setHasChanges(true);
+                                            }}
+                                            className="input-field"
+                                            min="0"
+                                            step="0.01"
+                                            style={{ borderColor: 'var(--success-color)', fontSize: '1.1rem', fontWeight: '700' }}
+                                        />
+                                    ) : (
+                                        <div style={{ fontSize: '1.5rem', fontWeight: '800', color: 'var(--success-color)' }}>
+                                            S/ {parseFloat(advancePayment || 0).toFixed(2)}
+                                        </div>
+                                    )}
+                                </div>
+                                <div style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--text-muted)', flex: 1 }}>
+                                    {isEditable ? 'El monto adelantado aplica para todo el pedido.' : 'Monto total adelantado por el cliente.'}
+                                </div>
+                            </div>
+
                             <div className="items-list grid-style">
                                 {/* Header del grid para Desktop */}
                                 <div className="item-row quotation hide-on-mobile" style={{ background: 'var(--bg-tertiary)', border: 'none', borderRadius: 0, padding: '0.75rem 1rem', borderBottom: '2px solid var(--border-color)' }}>
                                     <div style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', textAlign: 'center' }}>Cant.</div>
                                     <div style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Descripción</div>
                                     <div style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', textAlign: 'right' }}>P. Unit (S/)</div>
-                                    <div style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', textAlign: 'right' }}>Adelanto (S/)</div>
-                                    <div style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', textAlign: 'right' }}>Entrega (S/)</div>
                                     <div style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', textAlign: 'right' }}>Total (S/)</div>
                                 </div>
 
@@ -433,42 +498,6 @@ export const QuotationDetailModal = ({ quotation, onClose, onUpdate, autoSend = 
                                             ) : (
                                                 <div className="input-field" style={{ textAlign: 'right', background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
                                                     {item.unitPrice.toFixed(2)}
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="filter-group">
-                                            <label className="input-label hide-on-desktop">Adelanto (S/)</label>
-                                            {isEditable ? (
-                                                <input
-                                                    type="number"
-                                                    value={item.advancePayment}
-                                                    onChange={(e) => handleItemChange(item.id, 'advancePayment', parseFloat(e.target.value) || 0)}
-                                                    className="input-field"
-                                                    min="0"
-                                                    step="0.01"
-                                                    style={{ textAlign: 'right' }}
-                                                />
-                                            ) : (
-                                                <div className="input-field" style={{ textAlign: 'right', background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-                                                    {item.advancePayment.toFixed(2)}
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="filter-group">
-                                            <label className="input-label hide-on-desktop">Entrega (S/)</label>
-                                            {isEditable ? (
-                                                <input
-                                                    type="number"
-                                                    value={item.shippingCost}
-                                                    onChange={(e) => handleItemChange(item.id, 'shippingCost', parseFloat(e.target.value) || 0)}
-                                                    className="input-field"
-                                                    min="0"
-                                                    step="0.01"
-                                                    style={{ textAlign: 'right' }}
-                                                />
-                                            ) : (
-                                                <div className="input-field" style={{ textAlign: 'right', background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-                                                    {(item.shippingCost || 0).toFixed(2)}
                                                 </div>
                                             )}
                                         </div>

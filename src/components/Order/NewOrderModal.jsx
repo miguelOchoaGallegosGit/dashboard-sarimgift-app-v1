@@ -12,8 +12,9 @@ export const NewOrderModal = ({ isOpen, onClose, onOrderCreated }) => {
     });
 
     const [items, setItems] = useState([
-        { id: Date.now(), description: '', quantity: 1, unitPrice: 0, amount: 0, advance: 0 }
+        { id: Date.now(), description: '', quantity: 1, unitPrice: 0, amount: 0 }
     ]);
+    const [advancePayment, setAdvancePayment] = useState(0);
 
     const [isSaving, setIsSaving] = useState(false);
 
@@ -36,7 +37,7 @@ export const NewOrderModal = ({ isOpen, onClose, onOrderCreated }) => {
     };
 
     const addItem = () => {
-        setItems(prev => [...prev, { id: Date.now(), description: '', quantity: 1, unitPrice: 0, amount: 0, advance: 0 }]);
+        setItems(prev => [...prev, { id: Date.now(), description: '', quantity: 1, unitPrice: 0, amount: 0 }]);
     };
 
     const removeItem = (id) => {
@@ -45,12 +46,9 @@ export const NewOrderModal = ({ isOpen, onClose, onOrderCreated }) => {
         }
     };
 
-    const totals = items.reduce((acc, item) => ({
-        amount: acc.amount + (Number(item.amount) || 0),
-        advance: acc.advance + (Number(item.advance) || 0)
-    }), { amount: 0, advance: 0 });
-
-    const totalBalance = totals.amount - totals.advance;
+    const totalAmount = items.reduce((acc, item) => acc + (Number(item.amount) || 0), 0);
+    const totalAdvance = Number(advancePayment) || 0;
+    const totalBalance = totalAmount - totalAdvance;
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -61,16 +59,21 @@ export const NewOrderModal = ({ isOpen, onClose, onOrderCreated }) => {
             return;
         }
 
+        if (totalAdvance > totalAmount) {
+            showToast('⚠️ El adelanto no puede superar el monto total (S/ ' + totalAmount.toFixed(2) + ')', 'warning');
+            return;
+        }
+
         setIsSaving(true);
         try {
             const newOrder = await OrderService.createOrder({
                 ...formData,
+                totalAdvance: totalAdvance,
                 items: items.map(i => ({
                     ...i,
                     quantity: Number(i.quantity),
                     unitPrice: Number(i.unitPrice),
-                    amount: Number(i.amount),
-                    advance: Number(i.advance)
+                    amount: Number(i.amount)
                 }))
             });
 
@@ -91,7 +94,8 @@ export const NewOrderModal = ({ isOpen, onClose, onOrderCreated }) => {
             date: new Date().toISOString().split('T')[0],
             deliveryDate: '',
         });
-        setItems([{ id: Date.now(), description: '', quantity: 1, unitPrice: 0, amount: 0, advance: 0 }]);
+        setItems([{ id: Date.now(), description: '', quantity: 1, unitPrice: 0, amount: 0 }]);
+        setAdvancePayment(0);
 
         onClose();
     };
@@ -211,17 +215,6 @@ export const NewOrderModal = ({ isOpen, onClose, onOrderCreated }) => {
                                             style={{ backgroundColor: 'var(--bg-tertiary)', cursor: 'not-allowed', color: 'var(--primary-color)', fontWeight: 'bold' }}
                                         />
                                     </div>
-                                    <div className="filter-group">
-                                        <label>Adelanto (S/)</label>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            step="0.01"
-                                            className="input-field"
-                                            value={item.advance}
-                                            onChange={(e) => handleItemChange(item.id, 'advance', e.target.value)}
-                                        />
-                                    </div>
 
                                     {items.length > 1 && (
                                         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -241,14 +234,43 @@ export const NewOrderModal = ({ isOpen, onClose, onOrderCreated }) => {
                         </div>
                     </div>
 
+                    {/* Campo de Adelanto Global */}
+                    <div style={{
+                        marginBottom: '2rem',
+                        padding: '1.5rem',
+                        background: 'var(--bg-secondary)',
+                        borderRadius: '12px',
+                        border: '1px solid var(--border-color)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '1.5rem',
+                        flexWrap: 'wrap'
+                    }}>
+                        <div className="filter-group" style={{ margin: 0, minWidth: '200px' }}>
+                            <label className="input-label" style={{ fontWeight: '700', color: 'var(--success-color)' }}>ADELANTO (S/)</label>
+                            <input
+                                type="number"
+                                value={advancePayment}
+                                onChange={(e) => setAdvancePayment(e.target.value)}
+                                className="input-field"
+                                min="0"
+                                step="0.01"
+                                style={{ borderColor: 'var(--success-color)', fontSize: '1.1rem', fontWeight: '700' }}
+                            />
+                        </div>
+                        <div style={{ fontSize: '1rem', fontWeight: '500', color: 'var(--text-muted)', flex: 1 }}>
+                            El monto adelantado aplica para todo el pedido.
+                        </div>
+                    </div>
+
                     <div className="order-summary-totals">
                         <div className="summary-item">
                             <span className="summary-label">Monto Total</span>
-                            <span className="summary-value">S/ {totals.amount.toFixed(2)}</span>
+                            <span className="summary-value">S/ {totalAmount.toFixed(2)}</span>
                         </div>
                         <div className="summary-item success">
                             <span className="summary-label">Adelantado</span>
-                            <span className="summary-value">S/ {totals.advance.toFixed(2)}</span>
+                            <span className="summary-value">S/ {totalAdvance.toFixed(2)}</span>
                         </div>
                         <div className="summary-item primary">
                             <span className="summary-label">Saldo Restante</span>

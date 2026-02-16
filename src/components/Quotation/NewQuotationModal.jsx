@@ -11,9 +11,9 @@ export const NewQuotationModal = ({ isOpen, onClose, onQuotationCreated }) => {
         id: Date.now(),
         product: '',
         quantity: 1,
-        unitPrice: 0,
-        advancePayment: 0
+        unitPrice: 0
     }]);
+    const [advancePayment, setAdvancePayment] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
@@ -39,8 +39,7 @@ export const NewQuotationModal = ({ isOpen, onClose, onQuotationCreated }) => {
             id: Date.now(),
             product: '',
             quantity: 1,
-            unitPrice: 0,
-            advancePayment: 0
+            unitPrice: 0
         }]);
     };
 
@@ -67,7 +66,7 @@ export const NewQuotationModal = ({ isOpen, onClose, onQuotationCreated }) => {
     };
 
     const calculateTotalAdvance = () => {
-        return items.reduce((sum, item) => sum + (parseFloat(item.advancePayment) || 0), 0);
+        return parseFloat(advancePayment) || 0;
     };
 
     const calculateBalance = () => {
@@ -94,6 +93,13 @@ export const NewQuotationModal = ({ isOpen, onClose, onQuotationCreated }) => {
             return;
         }
 
+        const total = calculateTotal();
+        const advance = calculateTotalAdvance();
+        if (advance > total) {
+            alert('El adelanto no puede superar el monto total de la cotización (S/ ' + total.toFixed(2) + ')');
+            return;
+        }
+
         setIsLoading(true);
         try {
             const quotationData = {
@@ -101,11 +107,11 @@ export const NewQuotationModal = ({ isOpen, onClose, onQuotationCreated }) => {
                 phone: phone.trim(),
                 registrationDate: new Date().toISOString().split('T')[0], // Fecha actual del sistema
                 scheduledDeliveryDate: scheduledDeliveryDate || null,
+                advancePayment: parseFloat(advancePayment) || 0,
                 items: validItems.map(item => ({
                     product: item.product.trim(),
                     quantity: parseInt(item.quantity) || 1,
-                    unitPrice: parseFloat(item.unitPrice) || 0,
-                    advancePayment: parseFloat(item.advancePayment) || 0
+                    unitPrice: parseFloat(item.unitPrice) || 0
                 }))
             };
 
@@ -124,12 +130,12 @@ export const NewQuotationModal = ({ isOpen, onClose, onQuotationCreated }) => {
         setCustomerName('');
         setPhone('');
         setScheduledDeliveryDate('');
+        setAdvancePayment(0);
         setItems([{
             id: Date.now(),
             product: '',
             quantity: 1,
-            unitPrice: 0,
-            advancePayment: 0
+            unitPrice: 0
         }]);
         onClose();
     };
@@ -216,6 +222,36 @@ export const NewQuotationModal = ({ isOpen, onClose, onQuotationCreated }) => {
                                 </button>
                             </div>
 
+                            {/* Campo de Adelanto Global */}
+                            <div style={{
+                                marginBottom: '1.5rem',
+                                padding: '1rem',
+                                background: 'white',
+                                borderRadius: '12px',
+                                border: '1px solid var(--border-color)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '1rem',
+                                flexWrap: 'wrap'
+                            }}>
+                                <div className="filter-group" style={{ margin: 0, minWidth: '200px' }}>
+                                    <label className="input-label" style={{ fontWeight: '700', color: 'var(--success-color)' }}>ADALANTO DEL PEDIDO (S/)</label>
+                                    <input
+                                        type="number"
+                                        value={advancePayment}
+                                        onChange={(e) => setAdvancePayment(e.target.value)}
+                                        className="input-field"
+                                        min="0"
+                                        step="0.01"
+                                        style={{ borderColor: 'var(--success-color)', fontSize: '1.1rem', fontWeight: '700' }}
+                                        placeholder="0.00"
+                                    />
+                                </div>
+                                <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', flex: 1 }}>
+                                    El monto adelantado aplica para todo el pedido. Puede ser 0 o hasta el total de la suma de subtotales.
+                                </div>
+                            </div>
+
                             <div className="items-list grid-style with-delete">
                                 {/* Header del grid para Desktop */}
                                 <div className="item-row quotation hide-on-mobile" style={{ background: 'var(--bg-tertiary)', border: 'none', borderRadius: 0, padding: '0.75rem 1rem', borderBottom: '2px solid var(--border-color)', gap: '0.75rem' }}>
@@ -223,7 +259,6 @@ export const NewQuotationModal = ({ isOpen, onClose, onQuotationCreated }) => {
                                     <div style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Descripción</div>
                                     <div style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', textAlign: 'right' }}>P. Unit (S/)</div>
                                     <div style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', textAlign: 'right' }}>Subtotal (S/)</div>
-                                    <div style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', textAlign: 'right' }}>Adelanto (S/)</div>
                                     <div style={{ padding: '0 0.5rem' }}></div> {/* Espacio para el botón de borrar */}
                                 </div>
 
@@ -279,18 +314,6 @@ export const NewQuotationModal = ({ isOpen, onClose, onQuotationCreated }) => {
                                             }}>
                                                 {calculateItemTotal(item).toFixed(2)}
                                             </div>
-                                        </div>
-                                        <div className="filter-group">
-                                            <label className="input-label hide-on-desktop">Adelanto (S/)</label>
-                                            <input
-                                                type="number"
-                                                value={item.advancePayment}
-                                                onChange={(e) => handleItemChange(item.id, 'advancePayment', e.target.value)}
-                                                className="input-field"
-                                                min="0"
-                                                step="0.01"
-                                                style={{ textAlign: 'right' }}
-                                            />
                                         </div>
                                         <button
                                             type="button"
@@ -370,8 +393,8 @@ export const NewQuotationModal = ({ isOpen, onClose, onQuotationCreated }) => {
                             )}
                         </button>
                     </div>
-                </form>
-            </div>
-        </div>
+                </form >
+            </div >
+        </div >
     );
 };

@@ -13,6 +13,7 @@ const transformQuotation = (dbQuotation) => {
         status: dbQuotation.status,
         rejectionReason: dbQuotation.rejection_reason,
         relatedOrderId: dbQuotation.related_order_id,
+        advancePayment: parseFloat(dbQuotation.advance_payment) || 0,
         items: (dbQuotation.quotation_items || []).map(transformQuotationItem),
         createdAt: new Date(dbQuotation.created_at).getTime(),
         updatedAt: new Date(dbQuotation.updated_at).getTime()
@@ -27,7 +28,6 @@ const transformQuotationItem = (dbItem) => {
         product: dbItem.product,
         quantity: parseInt(dbItem.quantity) || 1,
         unitPrice: parseFloat(dbItem.unit_price) || 0,
-        advancePayment: parseFloat(dbItem.advance_payment) || 0,
         shippingCost: parseFloat(dbItem.shipping_cost) || 0,
         totalPrice: (parseInt(dbItem.quantity) || 1) * (parseFloat(dbItem.unit_price) || 0)
     };
@@ -103,6 +103,7 @@ export const QuotationService = {
                     phone: quotationData.phone,
                     registration_date: quotationData.registrationDate,
                     scheduled_delivery_date: quotationData.scheduledDeliveryDate,
+                    advance_payment: quotationData.advancePayment || 0,
                     status: 'REGISTRADO'
                 }])
                 .select()
@@ -115,7 +116,6 @@ export const QuotationService = {
                 product: item.product,
                 quantity: item.quantity,
                 unit_price: item.unitPrice,
-                advance_payment: item.advancePayment,
                 shipping_cost: 0 // Default 0 on creation
             }));
 
@@ -144,7 +144,6 @@ export const QuotationService = {
                 .update({
                     quantity: updates.quantity,
                     unit_price: updates.unitPrice,
-                    advance_payment: updates.advancePayment,
                     shipping_cost: updates.shippingCost
                 })
                 .eq('id', itemId)
@@ -155,6 +154,30 @@ export const QuotationService = {
             return transformQuotationItem(data);
         } catch (error) {
             console.error('Error updating quotation item:', error);
+            throw error;
+        }
+    },
+
+    updateQuotation: async (id, updates) => {
+        try {
+            const dbUpdates = {};
+            if (updates.customerName !== undefined) dbUpdates.customer_name = updates.customerName;
+            if (updates.phone !== undefined) dbUpdates.phone = updates.phone;
+            if (updates.scheduledDeliveryDate !== undefined) dbUpdates.scheduled_delivery_date = updates.scheduledDeliveryDate;
+            if (updates.advancePayment !== undefined) dbUpdates.advance_payment = updates.advancePayment;
+            if (updates.status !== undefined) dbUpdates.status = updates.status;
+
+            const { data, error } = await supabase
+                .from('quotations')
+                .update(dbUpdates)
+                .eq('id', id)
+                .select()
+                .single();
+
+            if (error) throw error;
+            return transformQuotation(data);
+        } catch (error) {
+            console.error('Error updating quotation:', error);
             throw error;
         }
     },
@@ -192,11 +215,11 @@ export const QuotationService = {
 
             // 2. Prepare Order Data
             // Map items. Amount = (qty * unitPrice) + shipping.
-            const orderItems = quotation.items.map(item => ({
+            const orderItems = quotation.items.map((item, index) => ({
                 description: item.product,
                 quantity: item.quantity,
                 unitPrice: item.unitPrice,
-                advance: item.advancePayment,
+                advance: index === 0 ? quotation.advancePayment : 0, // Assign total advance to the first item for compatibility
                 amount: (item.quantity * item.unitPrice) + (item.shippingCost || 0)
             }));
 

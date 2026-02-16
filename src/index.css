@@ -1472,7 +1472,7 @@ body {
 }
 
 .item-row.quotation {
-  grid-template-columns: 80px 1fr 130px 130px 130px auto;
+  grid-template-columns: 80px 1fr 130px 130px auto;
 }
 
 /* Nuevo sistema de grilla para modales (Desktop) */
@@ -1486,7 +1486,7 @@ body {
   }
 
   .items-list.grid-style .item-row.quotation {
-    grid-template-columns: 60px 1fr 100px 100px 100px 110px;
+    grid-template-columns: 60px 1fr 100px 110px;
     background: transparent;
     border: none;
     border-bottom: 1px solid var(--border-color);
@@ -1498,7 +1498,7 @@ body {
 
   /* Ajuste para cuando hay botón de eliminar (NewQuotationModal) */
   .items-list.grid-style.with-delete .item-row.quotation {
-    grid-template-columns: 60px 1fr 100px 100px 100px 50px;
+    grid-template-columns: 60px 1fr 100px 100px 50px;
     gap: 0.75rem;
   }
 
@@ -1626,4 +1626,78 @@ body {
   .stat-value {
     font-size: 1.5rem;
   }
+}
+
+/* ============================================
+   ESTILOS PARA CAPTURA DE IMAGEN (CAPTURING MODE)
+   ============================================ */
+
+/* Forzamos el comportamiento de desktop cuando estamos en captura */
+.capturing-mode .hide-on-mobile {
+  display: block !important;
+}
+
+.capturing-mode .hide-on-desktop {
+  display: none !important;
+}
+
+/* Forzar grid de información del cliente a 4 columnas */
+.capturing-mode .modal-content>div[style*="grid"] {
+  grid-template-columns: repeat(4, 1fr) !important;
+}
+
+.capturing-mode .inventory-form-grid {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 2rem !important;
+}
+
+.capturing-mode .items-list.grid-style {
+  display: block !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: var(--radius-md) !important;
+  background: var(--bg-secondary) !important;
+  overflow: hidden !important;
+}
+
+.capturing-mode .item-row.quotation {
+  display: grid !important;
+  grid-template-columns: 60px 1fr 100px 110px !important;
+  background: transparent !important;
+  border-bottom: 1px solid var(--border-color) !important;
+  border-radius: 0 !important;
+  padding: 0.5rem 1rem !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+}
+
+.capturing-mode .item-row.quotation:last-child {
+  border-bottom: none !important;
+}
+
+/* Forzar totales a horizontal */
+.capturing-mode .order-summary-totals {
+  flex-direction: row !important;
+  justify-content: flex-end !important;
+  gap: 3rem !important;
+  text-align: right !important;
+  padding: 2rem !important;
+  display: flex !important;
+}
+
+.capturing-mode .summary-item {
+  text-align: right !important;
+  border-bottom: none !important;
+  padding-bottom: 0 !important;
+}
+
+.capturing-mode .summary-value {
+  font-size: 1.8rem !important;
+}
+
+/* Evitar sombras extrañas en la captura que puedan verse mal */
+.capturing-mode {
+  box-shadow: none !important;
+  transform: none !important;
+  border: none !important;
 }

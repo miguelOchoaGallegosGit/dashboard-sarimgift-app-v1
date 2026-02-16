@@ -99,6 +99,12 @@ export const OrderDetailsModal = ({ order, onClose, onUpdate }) => {
             return;
         }
 
+        const totalAmount = editedOrder.items.reduce((sum, item) => sum + (Number(item.quantity) * Number(item.unitPrice)), 0);
+        if (Number(editedOrder.totalAdvance) > totalAmount) {
+            showToast('⚠️ El adelanto no puede superar el monto total (S/ ' + totalAmount.toFixed(2) + ')', 'warning');
+            return;
+        }
+
         setIsSaving(true);
         try {
             const updated = await OrderService.updateOrder(currentOrder.id, {

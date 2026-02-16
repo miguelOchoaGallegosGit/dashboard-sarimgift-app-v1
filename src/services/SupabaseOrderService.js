@@ -27,7 +27,7 @@ const transformSupabaseOrder = (dbOrder) => {
         isDelivered: !!dbOrder.is_delivered,
         isPaid: !!dbOrder.is_paid,
         totalAmount: parseFloat(dbOrder.total_amount) || 0,
-        totalAdvance: parseFloat(dbOrder.total_advance) || 0,
+        totalAdvance: parseFloat(dbOrder.advance_payment) || 0,
         totalBalance: parseFloat(dbOrder.total_balance) || 0,
         notes: dbOrder.notes || '',
         createdAt: new Date(dbOrder.created_at).getTime(),
@@ -36,8 +36,7 @@ const transformSupabaseOrder = (dbOrder) => {
             description: item.description,
             quantity: item.quantity,
             unitPrice: parseFloat(item.unit_price) || 0,
-            amount: parseFloat(item.amount) || 0,
-            advance: parseFloat(item.advance) || 0
+            amount: parseFloat(item.amount) || 0
         }))
     };
 };
@@ -78,8 +77,12 @@ export const SupabaseOrderService = {
         try {
             const items = orderData.items || [];
             const totalAmount = items.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
-            const totalAdvance = items.reduce((sum, item) => sum + (Number(item.advance) || 0), 0);
+            const totalAdvance = Number(orderData.totalAdvance) || 0;
             const totalBalance = totalAmount - totalAdvance;
+
+            if (totalAdvance > totalAmount) {
+                throw new Error('El adelanto no puede superar el monto total de la orden');
+            }
 
             // Obtener todas las órdenes para generar el siguiente número
             const { data: currentOrders } = await supabase
@@ -101,7 +104,7 @@ export const SupabaseOrderService = {
                     is_delivered: !!orderData.isDelivered,
                     is_paid: !!orderData.isPaid,
                     total_amount: totalAmount,
-                    total_advance: totalAdvance,
+                    advance_payment: totalAdvance,
                     total_balance: totalBalance,
                     notes: orderData.notes || ''
                 }])
@@ -117,8 +120,7 @@ export const SupabaseOrderService = {
                     description: item.description,
                     quantity: Number(item.quantity) || 1,
                     unit_price: Number(item.unitPrice) || 0,
-                    amount: Number(item.amount) || 0,
-                    advance: Number(item.advance) || 0
+                    amount: Number(item.amount) || 0
                 }));
 
                 const { error: itemsError } = await supabase
@@ -146,8 +148,12 @@ export const SupabaseOrderService = {
             // Recalcular totales si los items cambiaron
             const items = merged.items || [];
             const totalAmount = items.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
-            const totalAdvance = items.reduce((sum, item) => sum + (Number(item.advance) || 0), 0);
+            const totalAdvance = Number(merged.totalAdvance) || 0;
             const totalBalance = totalAmount - totalAdvance;
+
+            if (totalAdvance > totalAmount) {
+                throw new Error('El adelanto no puede superar el monto total de la orden');
+            }
 
             // Lógica de transición de estados
             let status = merged.status;
@@ -167,7 +173,7 @@ export const SupabaseOrderService = {
                     is_delivered: !!merged.isDelivered,
                     is_paid: !!merged.isPaid,
                     total_amount: totalAmount,
-                    total_advance: totalAdvance,
+                    advance_payment: totalAdvance,
                     total_balance: totalBalance,
                     notes: merged.notes || ''
                 })
@@ -191,8 +197,7 @@ export const SupabaseOrderService = {
                     description: item.description,
                     quantity: Number(item.quantity) || 0,
                     unit_price: Number(item.unitPrice) || 0,
-                    amount: (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0),
-                    advance: Number(item.advance) || 0
+                    amount: (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0)
                 }));
 
                 const { error: itemsError } = await supabase
