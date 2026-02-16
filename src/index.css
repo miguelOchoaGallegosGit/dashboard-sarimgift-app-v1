@@ -1701,3 +1701,19 @@ body {
   transform: none !important;
   border: none !important;
 }
+
+/* Estilos para miniaturas de inventario */
+.inventory-thumbnail {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), filter 0.3s ease;
+  transform-origin: left center;
+}
+
+.inventory-thumbnail:hover {
+  transform: scale(3) translateX(10px);
+  filter: brightness(1.1) contrast(1.1);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  position: relative;
+  cursor: zoom-in;
+  border-radius: 4px;
+}

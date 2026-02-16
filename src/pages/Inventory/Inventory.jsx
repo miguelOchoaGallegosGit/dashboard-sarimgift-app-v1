@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Package, Plus, Search, Filter } from 'lucide-react';
+import { useToast } from '../../context/ToastContext';
 import { InventoryService } from '../../services/InventoryService';
 import { InventoryGrid } from '../../components/Inventory/InventoryGrid';
 import { AddInventoryItemModal } from '../../components/Inventory/AddInventoryItemModal';
@@ -13,6 +14,7 @@ export const Inventory = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [showAddModal, setShowAddModal] = useState(false);
     const [selectedItemForUpdate, setSelectedItemForUpdate] = useState(null);
+    const { showToast } = useToast();
 
     const categories = ['Unisex', 'Niño', 'Niña', 'Dama', 'Caballero', 'Accesorios'];
 
@@ -71,6 +73,7 @@ export const Inventory = () => {
     const handleSaveNewItem = async (itemData) => {
         try {
             await InventoryService.createInventoryItem(itemData);
+            showToast('✨ Item registrado exitosamente en el inventario', 'success');
             await loadInventory();
         } catch (error) {
             console.error('Error creating item:', error);
@@ -81,6 +84,7 @@ export const Inventory = () => {
     const handleUpdateStock = async (itemId, updates) => {
         try {
             await InventoryService.updateInventoryItem(itemId, updates);
+            showToast('✅ Item actualizado correctamente', 'success');
             await loadInventory();
         } catch (error) {
             console.error('Error updating item:', error);

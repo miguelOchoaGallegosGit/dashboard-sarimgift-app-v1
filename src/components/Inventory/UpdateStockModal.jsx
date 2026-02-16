@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, AlertTriangle, Edit3 } from 'lucide-react';
+import { X, AlertTriangle, Edit3, Upload, Image as ImageIcon } from 'lucide-react';
+import { InventoryService } from '../../services/InventoryService';
 
 export const UpdateStockModal = ({ item, onClose, onUpdate }) => {
     const [newQuantity, setNewQuantity] = useState(item.quantity);
@@ -7,6 +8,9 @@ export const UpdateStockModal = ({ item, onClose, onUpdate }) => {
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
+    const [imageFile, setImageFile] = useState(null);
+    const [imagePreview, setImagePreview] = useState(item.imageUrl || null);
+    const [originalImageUrl] = useState(item.imageUrl || null);
 
     const handleQuantityChange = (e) => {
         const value = e.target.value;
@@ -18,6 +22,23 @@ export const UpdateStockModal = ({ item, onClose, onUpdate }) => {
         const value = e.target.value;
         setNewUnitPrice(value);
         setError('');
+    };
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            if (file.size > 2 * 1024 * 1024) {
+                setError('La imagen no debe superar los 2MB');
+                return;
+            }
+            setImageFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result);
+            };
+            reader.readAsDataURL(file);
+            setError('');
+        }
     };
 
     // Cerrar modal al presionar ESC
@@ -59,7 +80,23 @@ export const UpdateStockModal = ({ item, onClose, onUpdate }) => {
 
         setIsSubmitting(true);
         try {
-            await onUpdate(item.id, { quantity, unit_price });
+            let imageUrl = originalImageUrl;
+
+            // Si hay un nuevo archivo, subirlo y borrar el anterior
+            if (imageFile) {
+                // Borrar imagen anterior si existía
+                if (originalImageUrl) {
+                    await InventoryService.deleteImage(originalImageUrl);
+                }
+                // Subir nueva imagen
+                imageUrl = await InventoryService.uploadImage(imageFile);
+            }
+
+            await onUpdate(item.id, {
+                quantity,
+                unit_price,
+                imageUrl
+            });
             onClose();
         } catch (err) {
             console.error('Error updating item:', err);
@@ -203,6 +240,63 @@ export const UpdateStockModal = ({ item, onClose, onUpdate }) => {
                         <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
                             Precio de venta del producto
                         </span>
+                    </div>
+
+                    {/* Sección de Imagen */}
+                    <div className="filter-group" style={{ marginTop: '1.5rem' }}>
+                        <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)', display: 'block', marginBottom: '0.75rem' }}>
+                            Imagen del Producto
+                        </label>
+                        <div style={{
+                            display: 'flex',
+                            gap: '1.5rem',
+                            alignItems: 'center',
+                            background: 'var(--bg-secondary)',
+                            padding: '1rem',
+                            borderRadius: '12px',
+                            border: '1px dashed var(--border-color)'
+                        }}>
+                            <div style={{
+                                width: '80px',
+                                height: '80px',
+                                borderRadius: '8px',
+                                background: 'var(--bg-tertiary)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                overflow: 'hidden',
+                                border: '1px solid var(--border-color)',
+                                flexShrink: 0
+                            }}>
+                                {imagePreview ? (
+                                    <img src={imagePreview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                ) : (
+                                    <ImageIcon size={28} color="var(--text-muted)" />
+                                )}
+                            </div>
+                            <div style={{ flex: 1 }}>
+                                <label className="btn btn-secondary" style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
+                                    cursor: 'pointer',
+                                    fontSize: '0.85rem',
+                                    padding: '0.5rem 0.8rem'
+                                }}>
+                                    <Upload size={14} />
+                                    {originalImageUrl || imageFile ? 'Cambiar Imagen' : 'Subir Imagen'}
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleImageChange}
+                                        style={{ display: 'none' }}
+                                    />
+                                </label>
+                                <p style={{ margin: '0.4rem 0 0 0', fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                                    Capacidad: Máx 2MB
+                                </p>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Advertencia si el nuevo stock es bajo */}

@@ -31,6 +31,7 @@ const transformSupabaseItem = (dbItem) => {
         diseno: dbItem.diseno,
         size: dbItem.size,
         color: dbItem.color,
+        imageUrl: dbItem.image_url || null,
         createdAt: new Date(dbItem.created_at).getTime(),
         updatedAt: new Date(dbItem.updated_at).getTime()
     };
@@ -135,7 +136,8 @@ export const InventoryService = {
                     modelo: itemData.modelo || null,
                     diseno: itemData.diseno || null,
                     size: itemData.size || null,
-                    color: itemData.color || null
+                    color: itemData.color || null,
+                    image_url: itemData.imageUrl || null
                 }])
                 .select()
                 .single();
@@ -204,6 +206,7 @@ export const InventoryService = {
             if (updates.diseno !== undefined) updateData.diseno = updates.diseno;
             if (updates.size !== undefined) updateData.size = updates.size;
             if (updates.color !== undefined) updateData.color = updates.color;
+            if (updates.imageUrl !== undefined) updateData.image_url = updates.imageUrl;
 
             const { data: updatedItem, error } = await supabase
                 .from('inventory_items')
@@ -242,6 +245,9 @@ export const InventoryService = {
     /**
      * Obtiene items con stock bajo (cantidad < 5)
      */
+    /**
+     * Obtiene items con stock bajo (cantidad < 5)
+     */
     getLowStockItems: async () => {
         try {
             const { data, error } = await supabase
@@ -256,6 +262,54 @@ export const InventoryService = {
         } catch (error) {
             console.error('Error fetching low stock items:', error);
             return [];
+        }
+    },
+
+    /**
+     * Sube una imagen a Supabase Storage
+     */
+    uploadImage: async (file) => {
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+            const filePath = `inventory/${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('inventory-images')
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data } = supabase.storage
+                .from('inventory-images')
+                .getPublicUrl(filePath);
+
+            return data.publicUrl;
+        } catch (error) {
+            console.error('Error uploading image to storage:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Elimina una imagen de Supabase Storage por su URL pública
+     */
+    deleteImage: async (url) => {
+        try {
+            if (!url) return;
+            // Extraer el path de la URL (ej: inventory/filename.jpg)
+            // La URL suele ser https://[id].supabase.co/storage/v1/object/public/inventory-images/inventory/filename.jpg
+            const pathMatch = url.match(/inventory\/[^?]+/);
+            if (!pathMatch) return;
+
+            const path = pathMatch[0];
+            const { error } = await supabase.storage
+                .from('inventory-images')
+                .remove([path]);
+
+            if (error) throw error;
+        } catch (error) {
+            console.error('Error deleting image from storage:', error);
         }
     }
 };

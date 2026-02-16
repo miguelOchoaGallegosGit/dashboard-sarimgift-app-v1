@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, Package } from 'lucide-react';
+import { X, Package, Upload, Image as ImageIcon } from 'lucide-react';
+import { InventoryService } from '../../services/InventoryService';
 
 export const AddInventoryItemModal = ({ onClose, onSave }) => {
     const [formData, setFormData] = useState({
@@ -16,6 +17,8 @@ export const AddInventoryItemModal = ({ onClose, onSave }) => {
 
     const [errors, setErrors] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [imageFile, setImageFile] = useState(null);
+    const [imagePreview, setImagePreview] = useState(null);
 
     const categories = ['Unisex', 'Niño', 'Niña', 'Dama', 'Caballero', 'Accesorios'];
 
@@ -25,6 +28,25 @@ export const AddInventoryItemModal = ({ onClose, onSave }) => {
         // Limpiar error del campo cuando el usuario empieza a escribir
         if (errors[name]) {
             setErrors(prev => ({ ...prev, [name]: '' }));
+        }
+    };
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            if (file.size > 2 * 1024 * 1024) { // 2MB limit
+                setErrors(prev => ({ ...prev, image: 'La imagen no debe superar los 2MB' }));
+                return;
+            }
+            setImageFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result);
+            };
+            reader.readAsDataURL(file);
+            if (errors.image) {
+                setErrors(prev => ({ ...prev, image: '' }));
+            }
         }
     };
 
@@ -70,7 +92,11 @@ export const AddInventoryItemModal = ({ onClose, onSave }) => {
 
         setIsSubmitting(true);
         try {
-            await onSave(formData);
+            let imageUrl = null;
+            if (imageFile) {
+                imageUrl = await InventoryService.uploadImage(imageFile);
+            }
+            await onSave({ ...formData, imageUrl });
             onClose();
         } catch (error) {
             console.error('Error saving item:', error);
@@ -251,6 +277,64 @@ export const AddInventoryItemModal = ({ onClose, onSave }) => {
                                     value={formData.color}
                                     onChange={handleChange}
                                 />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Sección de Imagen */}
+                    <div className="filter-group" style={{ marginTop: '1rem' }}>
+                        <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)', display: 'block', marginBottom: '0.75rem' }}>
+                            Imagen del Producto
+                        </label>
+                        <div style={{
+                            display: 'flex',
+                            gap: '1.5rem',
+                            alignItems: 'center',
+                            background: 'var(--bg-secondary)',
+                            padding: '1rem',
+                            borderRadius: '12px',
+                            border: '1px dashed var(--border-color)'
+                        }}>
+                            <div style={{
+                                width: '100px',
+                                height: '100px',
+                                borderRadius: '8px',
+                                background: 'var(--bg-tertiary)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                overflow: 'hidden',
+                                border: '1px solid var(--border-color)',
+                                flexShrink: 0
+                            }}>
+                                {imagePreview ? (
+                                    <img src={imagePreview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                ) : (
+                                    <ImageIcon size={32} color="var(--text-muted)" />
+                                )}
+                            </div>
+                            <div style={{ flex: 1 }}>
+                                <label className="btn btn-secondary" style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
+                                    cursor: 'pointer',
+                                    fontSize: '0.85rem',
+                                    padding: '0.6rem 1rem'
+                                }}>
+                                    <Upload size={16} />
+                                    {imageFile ? 'Cambiar Imagen' : 'Subir Imagen'}
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleImageChange}
+                                        style={{ display: 'none' }}
+                                    />
+                                </label>
+                                <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                                    PNG, JPG o WEBP (Máx. 2MB)
+                                </p>
+                                {errors.image && <p style={{ margin: '0.4rem 0 0 0', fontSize: '0.75rem', color: 'var(--danger-color)' }}>{errors.image}</p>}
                             </div>
                         </div>
                     </div>

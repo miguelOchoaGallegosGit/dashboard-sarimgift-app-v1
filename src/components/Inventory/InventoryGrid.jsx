@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { ArrowUpDown, ArrowUp, ArrowDown, Edit3, Eye, EyeOff, Settings } from 'lucide-react';
+import { ArrowUpDown, ArrowUp, ArrowDown, Edit3, Eye, EyeOff, Settings, Image as ImageIcon } from 'lucide-react';
 
 export const InventoryGrid = ({ items, onUpdateStock, sorting, onSortChange }) => {
     const [visibleColumns, setVisibleColumns] = useState({
+        imageUrl: true,
         itemNumber: true,
         category: true,
         quantity: true,
@@ -18,6 +19,7 @@ export const InventoryGrid = ({ items, onUpdateStock, sorting, onSortChange }) =
     const [showColumnSelector, setShowColumnSelector] = useState(false);
 
     const columns = [
+        { key: 'imageUrl', label: 'Imagen', alwaysVisible: true },
         { key: 'itemNumber', label: 'Item #', alwaysVisible: true },
         { key: 'category', label: 'Categoría', alwaysVisible: false },
         { key: 'quantity', label: 'Cantidad', alwaysVisible: false },
@@ -129,6 +131,32 @@ export const InventoryGrid = ({ items, onUpdateStock, sorting, onSortChange }) =
 
                             return (
                                 <tr key={item.id} className={isLowStock ? 'low-stock-row' : ''}>
+                                    {visibleColumns.imageUrl && (
+                                        <td>
+                                            <div style={{
+                                                width: '40px',
+                                                height: '40px',
+                                                borderRadius: '6px',
+                                                background: 'var(--bg-tertiary)',
+                                                border: '1px solid var(--border-color)',
+                                                overflow: 'hidden',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center'
+                                            }}>
+                                                {item.imageUrl ? (
+                                                    <img
+                                                        src={item.imageUrl}
+                                                        alt={item.itemNumber}
+                                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                        className="inventory-thumbnail"
+                                                    />
+                                                ) : (
+                                                    <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>N/A</span>
+                                                )}
+                                            </div>
+                                        </td>
+                                    )}
                                     {visibleColumns.itemNumber && (
                                         <td>
                                             <span style={{ fontWeight: '600', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
@@ -208,10 +236,31 @@ export const InventoryGrid = ({ items, onUpdateStock, sorting, onSortChange }) =
                         <div key={item.id} className={`inventory-card glass-panel ${isLowStock ? 'low-stock-card' : ''}`}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
                                 <div>
-                                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                                        {item.itemNumber}
-                                    </span>
-                                    <span className="category-badge" style={{ fontSize: '0.75rem', marginTop: '0.5rem', display: 'inline-block' }}>{item.category}</span>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                                        <div style={{
+                                            width: '45px',
+                                            height: '45px',
+                                            borderRadius: '8px',
+                                            background: 'var(--bg-tertiary)',
+                                            border: '1px solid var(--border-color)',
+                                            overflow: 'hidden',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
+                                        }}>
+                                            {item.imageUrl ? (
+                                                <img src={item.imageUrl} alt={item.itemNumber} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            ) : (
+                                                <ImageIcon size={20} color="var(--text-muted)" />
+                                            )}
+                                        </div>
+                                        <div>
+                                            <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                                {item.itemNumber}
+                                            </span>
+                                            <span className="category-badge" style={{ fontSize: '0.75rem', display: 'block' }}>{item.category}</span>
+                                        </div>
+                                    </div>
                                 </div>
                                 <button
                                     onClick={() => onUpdateStock(item)}
