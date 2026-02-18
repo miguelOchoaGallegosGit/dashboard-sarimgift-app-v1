@@ -211,7 +211,8 @@ export const SupabaseOrderService = {
                     description: item.description,
                     quantity: Number(item.quantity) || 0,
                     unit_price: Number(item.unitPrice) || 0,
-                    amount: (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0)
+                    amount: (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0),
+                    inventory_item_id: item.inventoryItemId || null  // ← preservar vínculo al inventario
                 }));
 
                 const { error: itemsError } = await supabase

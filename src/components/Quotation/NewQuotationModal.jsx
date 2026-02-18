@@ -67,9 +67,22 @@ export const NewQuotationModal = ({ isOpen, onClose, onQuotationCreated }) => {
     };
 
     const handleItemChange = (id, field, value) => {
-        setItems(items.map(item =>
-            item.id === id ? { ...item, [field]: value } : item
-        ));
+        setItems(items.map(item => {
+            if (item.id !== id) return item;
+            // Validar stock máximo si el item tiene inventario vinculado
+            if (field === 'quantity' && item.inventoryStock != null) {
+                const qty = parseInt(value) || 1;
+                if (qty > item.inventoryStock) {
+                    showAlert(
+                        `Stock disponible: ${item.inventoryStock} unidades. No puedes pedir más de lo disponible.`,
+                        'warning',
+                        'Stock insuficiente'
+                    );
+                    return { ...item, [field]: item.inventoryStock };
+                }
+            }
+            return { ...item, [field]: value };
+        }));
     };
 
     // Cuando el usuario selecciona un item del inventario
@@ -88,7 +101,8 @@ export const NewQuotationModal = ({ isOpen, onClose, onQuotationCreated }) => {
                     product: description,
                     unitPrice: inventoryItem.unit_price,
                     inventoryItemId: inventoryItem.id,
-                    inventoryItemNumber: inventoryItem.itemNumber
+                    inventoryItemNumber: inventoryItem.itemNumber,
+                    inventoryStock: inventoryItem.quantity  // ← guardar stock disponible
                 }
                 : item
         ));
@@ -314,8 +328,24 @@ export const NewQuotationModal = ({ isOpen, onClose, onQuotationCreated }) => {
                                                     onChange={(e) => handleItemChange(item.id, 'quantity', e.target.value)}
                                                     className="input-field"
                                                     min="1"
+                                                    max={item.inventoryStock != null ? item.inventoryStock : undefined}
                                                     style={{ textAlign: 'center' }}
+                                                    title={item.inventoryStock != null ? `Stock disponible: ${item.inventoryStock}` : undefined}
                                                 />
+                                                {/* Indicador de stock disponible */}
+                                                {item.inventoryStock != null && (
+                                                    <div style={{
+                                                        marginTop: '0.25rem',
+                                                        fontSize: '0.7rem',
+                                                        fontWeight: '600',
+                                                        textAlign: 'center',
+                                                        color: parseInt(item.quantity) >= item.inventoryStock
+                                                            ? 'var(--danger-color, #ef4444)'
+                                                            : 'var(--text-muted)'
+                                                    }}>
+                                                        Stock: {item.inventoryStock}
+                                                    </div>
+                                                )}
                                             </div>
 
                                             {/* Campo descripción con botón lupa */}
