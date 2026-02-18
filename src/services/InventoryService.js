@@ -297,8 +297,6 @@ export const InventoryService = {
     deleteImage: async (url) => {
         try {
             if (!url) return;
-            // Extraer el path de la URL (ej: inventory/filename.jpg)
-            // La URL suele ser https://[id].supabase.co/storage/v1/object/public/inventory-images/inventory/filename.jpg
             const pathMatch = url.match(/inventory\/[^?]+/);
             if (!pathMatch) return;
 
@@ -310,6 +308,41 @@ export const InventoryService = {
             if (error) throw error;
         } catch (error) {
             console.error('Error deleting image from storage:', error);
+        }
+    },
+
+    /**
+     * Descuenta stock de un item del inventario al entregar un pedido.
+     * Si el stock resultante es negativo, lo deja en 0.
+     */
+    deductInventoryStock: async (inventoryItemId, quantityToDeduct) => {
+        try {
+            if (!inventoryItemId) return null;
+
+            // Obtener el stock actual
+            const { data: currentItem, error: fetchError } = await supabase
+                .from('inventory_items')
+                .select('id, quantity')
+                .eq('id', inventoryItemId)
+                .single();
+
+            if (fetchError) throw fetchError;
+            if (!currentItem) return null;
+
+            const newQuantity = Math.max(0, (parseInt(currentItem.quantity) || 0) - (parseInt(quantityToDeduct) || 0));
+
+            const { data: updatedItem, error: updateError } = await supabase
+                .from('inventory_items')
+                .update({ quantity: newQuantity })
+                .eq('id', inventoryItemId)
+                .select()
+                .single();
+
+            if (updateError) throw updateError;
+            return transformSupabaseItem(updatedItem);
+        } catch (error) {
+            console.error('Error deducting inventory stock:', error);
+            throw error;
         }
     }
 };

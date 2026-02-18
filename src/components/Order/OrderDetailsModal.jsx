@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { X, CheckCircle, Truck, CreditCard, Play, Edit2, Save, RotateCcw } from 'lucide-react';
+import { X, CheckCircle, Truck, CreditCard, Play, Edit2, Save, RotateCcw, Image as ImageIcon } from 'lucide-react';
 import { OrderService } from '../../services';
 import { QuotationService } from '../../services/QuotationService';
+import { InventoryService } from '../../services/InventoryService';
 import { useToast } from '../../context/ToastContext';
-import { FileText } from 'lucide-react'; // Added import for icon
+import { FileText } from 'lucide-react';
 
 export const OrderDetailsModal = ({ order, onClose, onUpdate }) => {
     const { showToast } = useToast();
@@ -54,6 +55,19 @@ export const OrderDetailsModal = ({ order, onClose, onUpdate }) => {
                 const message = value === 'En Proceso' ? '🚀 Proceso iniciado' : '✅ Proceso terminado';
                 showToast(message);
                 return;
+            }
+
+            // Si se marca como entregado (y antes no lo estaba), descontar stock del inventario
+            if (key === 'isDelivered' && value === true && !currentOrder.isDelivered) {
+                const itemsWithInventory = currentOrder.items.filter(item => item.inventoryItemId);
+                if (itemsWithInventory.length > 0) {
+                    await Promise.allSettled(
+                        itemsWithInventory.map(item =>
+                            InventoryService.deductInventoryStock(item.inventoryItemId, item.quantity)
+                        )
+                    );
+                    showToast('📦 Stock de inventario actualizado');
+                }
             }
 
             // If we are toggling flags
@@ -301,43 +315,86 @@ export const OrderDetailsModal = ({ order, onClose, onUpdate }) => {
                         <ul style={{ listStyle: 'none', padding: 0 }}>
                             {(isEditing ? editedOrder.items : currentOrder.items).map((item) => (
                                 <li key={item.id} style={{ padding: '1rem 0', borderBottom: '1px solid var(--border-subtle)' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                        <div style={{ flex: 1 }}>
-                                            {isEditing ? (
-                                                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                                                    <input
-                                                        type="number"
-                                                        className="input-field"
-                                                        style={{ width: '60px', padding: '0.2rem' }}
-                                                        value={item.quantity}
-                                                        onChange={(e) => handleEditItem(item.id, 'quantity', e.target.value)}
-                                                    />
-                                                    <span style={{ fontWeight: 'bold' }}>x {item.description}</span>
+                                    {/* Layout 2 columnas: imagen (izq) + datos (der) */}
+                                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                                        {/* Imagen del item de inventario */}
+                                        {item.inventoryItem && (
+                                            <div style={{ flexShrink: 0, textAlign: 'center' }}>
+                                                <div style={{
+                                                    width: '80px',
+                                                    height: '80px',
+                                                    borderRadius: '10px',
+                                                    overflow: 'hidden',
+                                                    border: '1px solid var(--border-color)',
+                                                    background: 'var(--bg-tertiary)',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center'
+                                                }}>
+                                                    {item.inventoryItem.imageUrl ? (
+                                                        <img
+                                                            src={item.inventoryItem.imageUrl}
+                                                            alt={item.inventoryItem.tipo || item.inventoryItem.itemNumber}
+                                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                        />
+                                                    ) : (
+                                                        <ImageIcon size={22} strokeWidth={1.2} color="var(--text-muted)" />
+                                                    )}
                                                 </div>
-                                            ) : (
-                                                <div style={{ fontWeight: 'bold' }}>{item.quantity} x {item.description}</div>
-                                            )}
+                                                <div style={{
+                                                    marginTop: '0.3rem',
+                                                    padding: '0.15rem 0.35rem',
+                                                    background: 'var(--primary-light)',
+                                                    border: '1px solid var(--primary-color)',
+                                                    borderRadius: '4px',
+                                                    fontSize: '0.65rem',
+                                                    color: 'var(--primary-color)',
+                                                    fontWeight: '700'
+                                                }}>
+                                                    {item.inventoryItem.itemNumber}
+                                                </div>
+                                            </div>
+                                        )}
 
-                                            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                P. Unit:
+                                        {/* Datos del item */}
+                                        <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                            <div style={{ flex: 1 }}>
                                                 {isEditing ? (
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                                                        S/ <input
+                                                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                                        <input
                                                             type="number"
                                                             className="input-field"
-                                                            style={{ width: '80px', padding: '0.2rem' }}
-                                                            value={item.unitPrice}
-                                                            onChange={(e) => handleEditItem(item.id, 'unitPrice', e.target.value)}
+                                                            style={{ width: '60px', padding: '0.2rem' }}
+                                                            value={item.quantity}
+                                                            onChange={(e) => handleEditItem(item.id, 'quantity', e.target.value)}
                                                         />
+                                                        <span style={{ fontWeight: 'bold' }}>x {item.description}</span>
                                                     </div>
                                                 ) : (
-                                                    <span>S/ {item.unitPrice.toFixed(2)}</span>
+                                                    <div style={{ fontWeight: 'bold' }}>{item.quantity} x {item.description}</div>
                                                 )}
+
+                                                <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                    P. Unit:
+                                                    {isEditing ? (
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                                                            S/ <input
+                                                                type="number"
+                                                                className="input-field"
+                                                                style={{ width: '80px', padding: '0.2rem' }}
+                                                                value={item.unitPrice}
+                                                                onChange={(e) => handleEditItem(item.id, 'unitPrice', e.target.value)}
+                                                            />
+                                                        </div>
+                                                    ) : (
+                                                        <span>S/ {item.unitPrice.toFixed(2)}</span>
+                                                    )}
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div style={{ textAlign: 'right', minWidth: '100px' }}>
-                                            <div style={{ color: 'var(--primary-color)', fontWeight: '700', fontSize: '1.1rem' }}>
-                                                S/ {(Number(item.quantity) * Number(item.unitPrice)).toFixed(2)}
+                                            <div style={{ textAlign: 'right', minWidth: '100px' }}>
+                                                <div style={{ color: 'var(--primary-color)', fontWeight: '700', fontSize: '1.1rem' }}>
+                                                    S/ {(Number(item.quantity) * Number(item.unitPrice)).toFixed(2)}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

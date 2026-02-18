@@ -170,13 +170,17 @@ export const UpdateStockModal = ({ item, onClose, onUpdate }) => {
 
     return (
         <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+            <div
+                className="modal-content update-stock-modal"
+                onClick={(e) => e.stopPropagation()}
+            >
+                {/* Header */}
                 <div className="modal-header">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                         <div style={{ padding: '8px', borderRadius: '8px', background: 'var(--primary-light)' }}>
-                            <Edit3 size={24} color="var(--primary-color)" />
+                            <Edit3 size={22} color="var(--primary-color)" />
                         </div>
-                        <h2 style={{ margin: 0, fontSize: '1.5rem' }}>Actualizar Stock y Costo</h2>
+                        <h2 style={{ margin: 0, fontSize: '1.35rem' }}>Actualizar Stock y Costo</h2>
                     </div>
                     <button onClick={onClose} className="btn-icon" style={{ background: 'var(--bg-tertiary)' }}>
                         <X size={20} />
@@ -185,140 +189,178 @@ export const UpdateStockModal = ({ item, onClose, onUpdate }) => {
 
                 <form onSubmit={handleSubmit} style={{ padding: '1.25rem' }}>
                     {/* Información del item */}
-                    <div className="glass-panel" style={{ padding: '1rem', marginBottom: '1.5rem', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)' }}>
-                        <div style={{ marginBottom: '0.5rem' }}>
-                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    <div
+                        className="glass-panel"
+                        style={{
+                            padding: '0.875rem 1rem',
+                            marginBottom: '1.25rem',
+                            background: 'var(--bg-tertiary)',
+                            border: '1px solid var(--border-color)'
+                        }}
+                    >
+                        <div style={{ marginBottom: '0.25rem' }}>
+                            <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>
                                 {item.itemNumber}
                             </span>
                         </div>
-                        <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.2rem' }}>{item.name}</h3>
-                        <div style={{ display: 'flex', gap: '1rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                        <h3 style={{ margin: '0 0 0.4rem 0', fontSize: '1.1rem' }}>{item.name}</h3>
+                        <div style={{ display: 'flex', gap: '1rem', fontSize: '0.82rem', color: 'var(--text-muted)', flexWrap: 'wrap' }}>
                             <span>Categoría: <strong style={{ color: 'var(--text-color)' }}>{item.category}</strong></span>
                             <span>Stock Actual: <strong style={{ color: item.quantity < 5 ? 'var(--danger-color)' : 'var(--success-color)' }}>{item.quantity}</strong></span>
                         </div>
                     </div>
 
-                    {/* Campo de nueva cantidad */}
-                    <div className="filter-group">
-                        <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>
-                            Nueva Cantidad
-                        </label>
-                        <input
-                            type="number"
-                            className="input-field"
-                            placeholder="Ingrese la nueva cantidad"
-                            min="0"
-                            max="1000"
-                            value={newQuantity}
-                            onChange={handleQuantityChange}
-                            required
-                            autoFocus
-                            style={{ fontSize: '1.2rem', fontWeight: '600' }}
-                        />
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                            Rango permitido: 0 - 1000 unidades
-                        </span>
-                        {error && <span style={{ color: 'var(--danger-color)', fontSize: '0.8rem', marginTop: '0.5rem' }}>{error}</span>}
-                    </div>
+                    {/* Layout de 2 columnas */}
+                    <div className="update-stock-grid">
 
-                    {/* Campo de nuevo precio */}
-                    <div className="filter-group">
-                        <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>
-                            Nuevo Precio Unitario
-                        </label>
-                        <input
-                            type="number"
-                            className="input-field"
-                            placeholder="Ingrese el nuevo precio"
-                            min="0"
-                            step="0.01"
-                            value={newUnitPrice}
-                            onChange={handleUnitPriceChange}
-                            required
-                            style={{ fontSize: '1.2rem', fontWeight: '600' }}
-                        />
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                            Precio de venta del producto
-                        </span>
-                    </div>
+                        {/* ── Columna izquierda: Imagen ── */}
+                        <div className="update-stock-image-col">
+                            <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)', display: 'block', marginBottom: '0.75rem' }}>
+                                Imagen del Producto
+                            </label>
 
-                    {/* Sección de Imagen */}
-                    <div className="filter-group" style={{ marginTop: '1.5rem' }}>
-                        <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)', display: 'block', marginBottom: '0.75rem' }}>
-                            Imagen del Producto
-                        </label>
-                        <div style={{
-                            display: 'flex',
-                            gap: '1.5rem',
-                            alignItems: 'center',
-                            background: 'var(--bg-secondary)',
-                            padding: '1rem',
-                            borderRadius: '12px',
-                            border: '1px dashed var(--border-color)'
-                        }}>
-                            <div style={{
-                                width: '80px',
-                                height: '80px',
-                                borderRadius: '8px',
-                                background: 'var(--bg-tertiary)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                overflow: 'hidden',
-                                border: '1px solid var(--border-color)',
-                                flexShrink: 0
-                            }}>
+                            {/* Preview grande */}
+                            <div className="update-stock-image-preview">
                                 {imagePreview ? (
-                                    <img src={imagePreview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    <img
+                                        src={imagePreview}
+                                        alt="Preview del producto"
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                    />
                                 ) : (
-                                    <ImageIcon size={28} color="var(--text-muted)" />
+                                    <div style={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        gap: '0.75rem',
+                                        color: 'var(--text-muted)'
+                                    }}>
+                                        <ImageIcon size={48} strokeWidth={1.2} />
+                                        <span style={{ fontSize: '0.8rem', textAlign: 'center' }}>Sin imagen</span>
+                                    </div>
                                 )}
                             </div>
-                            <div style={{ flex: 1 }}>
-                                <label className="btn btn-secondary" style={{
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '0.5rem',
-                                    cursor: 'pointer',
-                                    fontSize: '0.85rem',
-                                    padding: '0.5rem 0.8rem'
+
+                            {/* Botón cargar */}
+                            <label className="btn btn-secondary update-stock-upload-btn">
+                                <Upload size={15} />
+                                {originalImageUrl || imageFile ? 'Cambiar Imagen' : 'Subir Imagen'}
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImageChange}
+                                    style={{ display: 'none' }}
+                                />
+                            </label>
+                            <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.72rem', color: 'var(--text-muted)', textAlign: 'center' }}>
+                                Capacidad: Máx 2MB · JPG, PNG, WEBP
+                            </p>
+
+                            {/* Nombre del archivo seleccionado */}
+                            {imageFile && (
+                                <div style={{
+                                    marginTop: '0.6rem',
+                                    padding: '0.4rem 0.6rem',
+                                    background: 'var(--success-bg)',
+                                    border: '1px solid var(--success-border)',
+                                    borderRadius: '6px',
+                                    fontSize: '0.72rem',
+                                    color: 'var(--success-color)',
+                                    textAlign: 'center',
+                                    wordBreak: 'break-all'
                                 }}>
-                                    <Upload size={14} />
-                                    {originalImageUrl || imageFile ? 'Cambiar Imagen' : 'Subir Imagen'}
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleImageChange}
-                                        style={{ display: 'none' }}
-                                    />
+                                    ✓ {imageFile.name}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* ── Columna derecha: Datos ── */}
+                        <div className="update-stock-data-col">
+
+                            {/* Nueva Cantidad */}
+                            <div className="filter-group">
+                                <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>
+                                    Nueva Cantidad
                                 </label>
-                                <p style={{ margin: '0.4rem 0 0 0', fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-                                    Capacidad: Máx 2MB
-                                </p>
+                                <input
+                                    type="number"
+                                    className="input-field"
+                                    placeholder="Ingrese la nueva cantidad"
+                                    min="0"
+                                    max="1000"
+                                    value={newQuantity}
+                                    onChange={handleQuantityChange}
+                                    required
+                                    autoFocus
+                                    style={{ fontSize: '1.15rem', fontWeight: '600' }}
+                                />
+                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                                    Rango permitido: 0 – 1000 unidades
+                                </span>
                             </div>
+
+                            {/* Nuevo Precio */}
+                            <div className="filter-group" style={{ marginTop: '1rem' }}>
+                                <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>
+                                    Nuevo Precio Unitario
+                                </label>
+                                <input
+                                    type="number"
+                                    className="input-field"
+                                    placeholder="Ingrese el nuevo precio"
+                                    min="0"
+                                    step="0.01"
+                                    value={newUnitPrice}
+                                    onChange={handleUnitPriceChange}
+                                    required
+                                    style={{ fontSize: '1.15rem', fontWeight: '600' }}
+                                />
+                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                                    Precio de venta del producto
+                                </span>
+                            </div>
+
+                            {/* Error */}
+                            {error && (
+                                <div style={{
+                                    marginTop: '0.75rem',
+                                    padding: '0.6rem 0.8rem',
+                                    background: 'var(--danger-bg)',
+                                    border: '1px solid var(--danger-border)',
+                                    borderRadius: '8px',
+                                    color: 'var(--danger-color)',
+                                    fontSize: '0.82rem',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.4rem'
+                                }}>
+                                    <AlertTriangle size={14} />
+                                    {error}
+                                </div>
+                            )}
+
+                            {/* Advertencia stock bajo */}
+                            {parseInt(newQuantity) > 0 && parseInt(newQuantity) < 5 && (
+                                <div style={{
+                                    padding: '0.65rem 0.875rem',
+                                    background: 'rgba(245, 158, 11, 0.1)',
+                                    border: '1px solid var(--warning-color)',
+                                    borderRadius: '8px',
+                                    marginTop: '0.75rem',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem'
+                                }}>
+                                    <AlertTriangle size={16} color="var(--warning-color)" />
+                                    <span style={{ color: 'var(--warning-color)', fontSize: '0.82rem' }}>
+                                        Stock bajo: Este item se marcará con alerta
+                                    </span>
+                                </div>
+                            )}
                         </div>
                     </div>
 
-                    {/* Advertencia si el nuevo stock es bajo */}
-                    {parseInt(newQuantity) > 0 && parseInt(newQuantity) < 5 && (
-                        <div style={{
-                            padding: '0.75rem 1rem',
-                            background: 'rgba(245, 158, 11, 0.1)',
-                            border: '1px solid var(--warning-color)',
-                            borderRadius: '8px',
-                            marginTop: '1rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.5rem'
-                        }}>
-                            <AlertTriangle size={18} color="var(--warning-color)" />
-                            <span style={{ color: 'var(--warning-color)', fontSize: '0.85rem' }}>
-                                Stock bajo: Este item se marcará con alerta
-                            </span>
-                        </div>
-                    )}
-
-                    {/* Botones */}
+                    {/* Botones de acción */}
                     <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
                         <button
                             type="button"

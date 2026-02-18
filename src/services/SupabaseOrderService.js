@@ -36,7 +36,20 @@ const transformSupabaseOrder = (dbOrder) => {
             description: item.description,
             quantity: item.quantity,
             unitPrice: parseFloat(item.unit_price) || 0,
-            amount: parseFloat(item.amount) || 0
+            amount: parseFloat(item.amount) || 0,
+            inventoryItemId: item.inventory_item_id || null,
+            // Si se hizo join con inventory_items, incluir datos del item
+            inventoryItem: item.inventory_items ? {
+                id: item.inventory_items.id,
+                itemNumber: item.inventory_items.item_number,
+                tipo: item.inventory_items.tipo,
+                material: item.inventory_items.material,
+                modelo: item.inventory_items.modelo,
+                size: item.inventory_items.size,
+                color: item.inventory_items.color,
+                imageUrl: item.inventory_items.image_url || null,
+                unit_price: parseFloat(item.inventory_items.unit_price) || 0
+            } : null
         }))
     };
 };
@@ -46,7 +59,7 @@ export const SupabaseOrderService = {
         try {
             const { data, error } = await supabase
                 .from('orders')
-                .select('*, order_items(*)')
+                .select('*, order_items(*, inventory_items(id, item_number, tipo, material, modelo, size, color, image_url, unit_price))')
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
@@ -61,7 +74,7 @@ export const SupabaseOrderService = {
         try {
             const { data, error } = await supabase
                 .from('orders')
-                .select('*, order_items(*)')
+                .select('*, order_items(*, inventory_items(id, item_number, tipo, material, modelo, size, color, image_url, unit_price))')
                 .eq('id', id)
                 .single();
 
@@ -120,7 +133,8 @@ export const SupabaseOrderService = {
                     description: item.description,
                     quantity: Number(item.quantity) || 1,
                     unit_price: Number(item.unitPrice) || 0,
-                    amount: Number(item.amount) || 0
+                    amount: Number(item.amount) || 0,
+                    inventory_item_id: item.inventoryItemId || null
                 }));
 
                 const { error: itemsError } = await supabase

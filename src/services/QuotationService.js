@@ -29,7 +29,20 @@ const transformQuotationItem = (dbItem) => {
         quantity: parseInt(dbItem.quantity) || 1,
         unitPrice: parseFloat(dbItem.unit_price) || 0,
         shippingCost: parseFloat(dbItem.shipping_cost) || 0,
-        totalPrice: (parseInt(dbItem.quantity) || 1) * (parseFloat(dbItem.unit_price) || 0)
+        totalPrice: (parseInt(dbItem.quantity) || 1) * (parseFloat(dbItem.unit_price) || 0),
+        inventoryItemId: dbItem.inventory_item_id || null,
+        // Si se hizo join con inventory_items, incluir datos del item
+        inventoryItem: dbItem.inventory_items ? {
+            id: dbItem.inventory_items.id,
+            itemNumber: dbItem.inventory_items.item_number,
+            tipo: dbItem.inventory_items.tipo,
+            material: dbItem.inventory_items.material,
+            modelo: dbItem.inventory_items.modelo,
+            size: dbItem.inventory_items.size,
+            color: dbItem.inventory_items.color,
+            imageUrl: dbItem.inventory_items.image_url || null,
+            unit_price: parseFloat(dbItem.inventory_items.unit_price) || 0
+        } : null
     };
 };
 
@@ -50,7 +63,7 @@ const generateQuotationNumber = (currentQuotations) => {
 export const QuotationService = {
     getQuotations: async (filters = {}, pagination = { page: 1, limit: 10 }, sorting = { field: 'created_at', order: 'desc' }) => {
         try {
-            let query = supabase.from('quotations').select('*, quotation_items(*)', { count: 'exact' });
+            let query = supabase.from('quotations').select('*, quotation_items(*, inventory_items(id, item_number, tipo, material, modelo, size, color, image_url, unit_price))', { count: 'exact' });
 
             // Filters
             if (filters.search) {
@@ -116,7 +129,8 @@ export const QuotationService = {
                 product: item.product,
                 quantity: item.quantity,
                 unit_price: item.unitPrice,
-                shipping_cost: 0 // Default 0 on creation
+                shipping_cost: 0, // Default 0 on creation
+                inventory_item_id: item.inventoryItemId || null
             }));
 
             const { data: newItems, error: iError } = await supabase
@@ -185,7 +199,7 @@ export const QuotationService = {
     getQuotationById: async (id) => {
         const { data, error } = await supabase
             .from('quotations')
-            .select('*, quotation_items(*)')
+            .select('*, quotation_items(*, inventory_items(id, item_number, tipo, material, modelo, size, color, image_url, unit_price))')
             .eq('id', id)
             .single();
 
@@ -219,8 +233,9 @@ export const QuotationService = {
                 description: item.product,
                 quantity: item.quantity,
                 unitPrice: item.unitPrice,
-                advance: index === 0 ? quotation.advancePayment : 0, // Assign total advance to the first item for compatibility
-                amount: (item.quantity * item.unitPrice) + (item.shippingCost || 0)
+                advance: index === 0 ? quotation.advancePayment : 0,
+                amount: (item.quantity * item.unitPrice) + (item.shippingCost || 0),
+                inventoryItemId: item.inventoryItemId || null // Propagar vínculo al pedido
             }));
 
             const orderData = {

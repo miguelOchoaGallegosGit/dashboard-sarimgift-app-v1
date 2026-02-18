@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Save, Ban, CheckCircle, XCircle, ShoppingBag, Send, Share2, Download } from 'lucide-react';
+import { X, Save, Ban, CheckCircle, XCircle, ShoppingBag, Send, Share2, Download, Package, Image as ImageIcon } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { QuotationService } from '../../services/QuotationService';
 import { ConfirmActionModal } from './ConfirmActionModal';
@@ -261,7 +261,6 @@ export const QuotationDetailModal = ({ quotation, onClose, onUpdate, autoSend = 
                         text: `Hola ${quotation.customerName}, adjunto tu cotización.`
                     });
                 } catch (shareError) {
-                    console.log('Error sharing:', shareError);
                     // Si falla el share (ej. el usuario canceló), no hacemos nada o descargamos como fallback
                 }
             } else {
@@ -459,64 +458,97 @@ export const QuotationDetailModal = ({ quotation, onClose, onUpdate, autoSend = 
                                 </div>
 
                                 {items.map((item) => (
-                                    <div key={item.id} className="item-row quotation">
-                                        <div className="filter-group">
-                                            <label className="input-label hide-on-desktop">Cant.</label>
-                                            {isEditable ? (
-                                                <input
-                                                    type="number"
-                                                    value={item.quantity}
-                                                    onChange={(e) => handleItemChange(item.id, 'quantity', parseInt(e.target.value) || 1)}
-                                                    className="input-field"
-                                                    min="1"
-                                                    style={{ textAlign: 'center' }}
-                                                />
-                                            ) : (
-                                                <div className="input-field" style={{ textAlign: 'center', background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                    {item.quantity}
+                                    <div key={item.id} className="quotation-item-detail-row">
+                                        {/* ── Columna izquierda: imagen del item de inventario ── */}
+                                        {item.inventoryItem && (
+                                            <div className="quotation-item-image-col">
+                                                <div className="quotation-item-image-box">
+                                                    {item.inventoryItem.imageUrl ? (
+                                                        <img
+                                                            src={item.inventoryItem.imageUrl}
+                                                            alt={item.inventoryItem.tipo || item.inventoryItem.itemNumber}
+                                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                        />
+                                                    ) : (
+                                                        <ImageIcon size={28} strokeWidth={1.2} color="var(--text-muted)" />
+                                                    )}
                                                 </div>
-                                            )}
-                                        </div>
-                                        <div className="filter-group">
-                                            <label className="input-label hide-on-desktop">Descripción</label>
-                                            <div className="input-field" style={{ background: 'var(--bg-tertiary)', fontWeight: '600', display: 'flex', alignItems: 'center' }}>
-                                                {item.product}
+                                                <div style={{
+                                                    marginTop: '0.4rem',
+                                                    padding: '0.2rem 0.4rem',
+                                                    background: 'var(--primary-light)',
+                                                    border: '1px solid var(--primary-color)',
+                                                    borderRadius: '4px',
+                                                    fontSize: '0.68rem',
+                                                    color: 'var(--primary-color)',
+                                                    fontWeight: '700',
+                                                    textAlign: 'center'
+                                                }}>
+                                                    📦 {item.inventoryItem.itemNumber}
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className="filter-group">
-                                            <label className="input-label hide-on-desktop">P. Unit. (S/)</label>
-                                            {isEditable ? (
-                                                <input
-                                                    type="number"
-                                                    value={item.unitPrice}
-                                                    onChange={(e) => handleItemChange(item.id, 'unitPrice', parseFloat(e.target.value) || 0)}
-                                                    className="input-field"
-                                                    min="0"
-                                                    step="0.01"
-                                                    style={{ textAlign: 'right' }}
-                                                />
-                                            ) : (
-                                                <div className="input-field" style={{ textAlign: 'right', background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-                                                    {item.unitPrice.toFixed(2)}
+                                        )}
+
+                                        {/* ── Columna derecha: datos del item ── */}
+                                        <div className="quotation-item-data-col item-row quotation">
+                                            <div className="filter-group">
+                                                <label className="input-label hide-on-desktop">Cant.</label>
+                                                {isEditable ? (
+                                                    <input
+                                                        type="number"
+                                                        value={item.quantity}
+                                                        onChange={(e) => handleItemChange(item.id, 'quantity', parseInt(e.target.value) || 1)}
+                                                        className="input-field"
+                                                        min="1"
+                                                        style={{ textAlign: 'center' }}
+                                                    />
+                                                ) : (
+                                                    <div className="input-field" style={{ textAlign: 'center', background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                        {item.quantity}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="filter-group">
+                                                <label className="input-label hide-on-desktop">Descripción</label>
+                                                <div className="input-field" style={{ background: 'var(--bg-tertiary)', fontWeight: '600', display: 'flex', alignItems: 'center' }}>
+                                                    {item.product}
                                                 </div>
-                                            )}
-                                        </div>
-                                        <div className="filter-group">
-                                            <label className="input-label hide-on-desktop">Total (S/)</label>
-                                            <div style={{
-                                                height: '48px',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'flex-end',
-                                                fontWeight: '700',
-                                                fontSize: '1rem',
-                                                color: 'var(--primary-color)',
-                                                background: 'var(--bg-tertiary)',
-                                                padding: '0 1rem',
-                                                borderRadius: '8px',
-                                                border: '1px solid var(--border-color)'
-                                            }}>
-                                                {((item.quantity * item.unitPrice) + (item.shippingCost || 0)).toFixed(2)}
+                                            </div>
+                                            <div className="filter-group">
+                                                <label className="input-label hide-on-desktop">P. Unit. (S/)</label>
+                                                {isEditable ? (
+                                                    <input
+                                                        type="number"
+                                                        value={item.unitPrice}
+                                                        onChange={(e) => handleItemChange(item.id, 'unitPrice', parseFloat(e.target.value) || 0)}
+                                                        className="input-field"
+                                                        min="0"
+                                                        step="0.01"
+                                                        style={{ textAlign: 'right' }}
+                                                    />
+                                                ) : (
+                                                    <div className="input-field" style={{ textAlign: 'right', background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                                                        {item.unitPrice.toFixed(2)}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="filter-group">
+                                                <label className="input-label hide-on-desktop">Total (S/)</label>
+                                                <div style={{
+                                                    height: '48px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'flex-end',
+                                                    fontWeight: '700',
+                                                    fontSize: '1rem',
+                                                    color: 'var(--primary-color)',
+                                                    background: 'var(--bg-tertiary)',
+                                                    padding: '0 1rem',
+                                                    borderRadius: '8px',
+                                                    border: '1px solid var(--border-color)'
+                                                }}>
+                                                    {((item.quantity * item.unitPrice) + (item.shippingCost || 0)).toFixed(2)}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

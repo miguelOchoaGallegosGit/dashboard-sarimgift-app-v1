@@ -12,7 +12,6 @@ const authenticateUser = async () => {
         const { data: { session } } = await supabase.auth.getSession();
 
         if (session) {
-            console.log('Usuario ya autenticado:', session.user.email);
             return;
         }
 
@@ -26,8 +25,6 @@ const authenticateUser = async () => {
             console.error('Error en autenticación automática:', error);
             return;
         }
-
-        console.log('Autenticación automática exitosa:', data.user.email);
     } catch (error) {
         console.error('Error inesperado en autenticación:', error);
     }
