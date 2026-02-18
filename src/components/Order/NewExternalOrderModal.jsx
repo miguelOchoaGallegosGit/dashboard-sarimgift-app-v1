@@ -147,7 +147,7 @@ export const NewExternalOrderModal = ({ isOpen, onClose, onOrderCreated }) => {
     return (
         <>
             <div className="modal-overlay" onClick={handleClose}>
-                <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '1000px' }}>
+                <div className="modal-content add-inventory-modal" onClick={(e) => e.stopPropagation()}>
                     <div className="modal-header">
                         <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '700', color: 'var(--primary-color)' }}>
                             Ingresar Cotización
