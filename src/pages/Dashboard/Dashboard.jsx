@@ -73,7 +73,7 @@ export const Dashboard = () => {
         return matchSearch && matchStatus && matchStart && matchEnd;
     });
 
-    const totalAmountFiltered = filteredOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
+    const totalAmountFiltered = filteredOrders.reduce((sum, order) => sum + (order.totalBalance || 0), 0);
     const isFiltered = filters.search !== '' || filters.status !== '' || filters.startDate !== '' || filters.endDate !== '';
 
     const getStatusColor = (status) => {
@@ -194,7 +194,7 @@ export const Dashboard = () => {
                         </div>
                         <div>
                             <h4 style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                                Total Acumulado (Filtro)
+                                Saldo Pendiente Acumulado (Filtro)
                             </h4>
                             <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
                                 Suma de los <strong style={{ color: 'var(--text-primary)' }}>{filteredOrders.length}</strong> pedidos encontrados
@@ -261,8 +261,8 @@ export const Dashboard = () => {
                                 <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
                                     {order.items?.length || 0} items registrados
                                 </div>
-                                <div style={{ fontWeight: '800', fontSize: '1.3rem', color: 'var(--primary-color)' }}>
-                                    S/ {order.totalAmount.toFixed(2)}
+                                <div style={{ fontWeight: '800', fontSize: '1.3rem', color: order.totalBalance > 0 ? 'var(--primary-color)' : 'var(--success-color)' }}>
+                                    S/ {(order.totalBalance || 0).toFixed(2)}
                                 </div>
                             </div>
                         </div>
