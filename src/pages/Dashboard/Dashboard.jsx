@@ -47,8 +47,8 @@ export const Dashboard = () => {
         if (filters.status === '') {
             matchStatus = true;
         } else if (filters.status === 'Entregado') {
-            // "Entregado": tiene entrega pero NO está pagado aún
-            matchStatus = order.isDelivered === true && order.isPaid === false;
+            // "Entregado": estado Terminado, con entrega marcada, pero pendiente de pago
+            matchStatus = order.status === 'Terminado' && order.isDelivered === true && order.isPaid === false;
         } else if (filters.status === 'Cerrado y Pagado') {
             // "Cerrado y Pagado": tiene ambos checks
             matchStatus = order.isDelivered === true && order.isPaid === true;
@@ -56,8 +56,8 @@ export const Dashboard = () => {
             // "En Proceso" puro: sin entrega ni pago marcado, y estado es En Proceso
             matchStatus = order.status === 'En Proceso' && !order.isDelivered && !order.isPaid;
         } else if (filters.status === 'Terminado') {
-            // "Terminado": estado es Terminado y al menos uno falta
-            matchStatus = order.status === 'Terminado' && (!order.isDelivered || !order.isPaid);
+            // "Terminado": estado Terminado, sin marca de entregado ni pagado
+            matchStatus = order.status === 'Terminado' && !order.isDelivered && !order.isPaid;
         } else if (filters.status === 'Recibido') {
             matchStatus = order.status === 'Recibido' && !order.isDelivered && !order.isPaid;
         } else {

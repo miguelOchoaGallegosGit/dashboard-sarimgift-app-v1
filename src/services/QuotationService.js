@@ -153,13 +153,18 @@ export const QuotationService = {
 
     updateQuotationItem: async (itemId, updates) => {
         try {
+            const dbUpdates = {
+                quantity: updates.quantity,
+                unit_price: updates.unitPrice,
+                shipping_cost: updates.shippingCost
+            };
+            if (updates.product !== undefined) {
+                dbUpdates.product = updates.product;
+            }
+
             const { data, error } = await supabase
                 .from('quotation_items')
-                .update({
-                    quantity: updates.quantity,
-                    unit_price: updates.unitPrice,
-                    shipping_cost: updates.shippingCost
-                })
+                .update(dbUpdates)
                 .eq('id', itemId)
                 .select()
                 .single();

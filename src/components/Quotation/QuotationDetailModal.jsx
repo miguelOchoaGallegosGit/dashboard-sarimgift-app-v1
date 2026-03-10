@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Save, Ban, CheckCircle, XCircle, ShoppingBag, Send, Share2, Download, Package, Image as ImageIcon } from 'lucide-react';
+import { X, Save, Ban, CheckCircle, XCircle, ShoppingBag, Send, Share2, Download, Package, Image as ImageIcon, Trash2, Plus, Search } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { QuotationService } from '../../services/QuotationService';
+import { supabase } from '../../lib/supabaseClient';
 import { ConfirmActionModal } from './ConfirmActionModal';
 import { RejectQuotationModal } from './RejectQuotationModal';
 import { useToast } from '../../context/ToastContext';
+import { InventoryPickerModal } from '../Inventory/InventoryPickerModal';
 
 
 export const QuotationDetailModal = ({ quotation, onClose, onUpdate, autoSend = false }) => {
@@ -22,6 +24,7 @@ export const QuotationDetailModal = ({ quotation, onClose, onUpdate, autoSend = 
     const [isGeneratingImage, setIsGeneratingImage] = useState(false);
     const contentRef = useRef(null);
     const hasAutoSent = useRef(false);
+    const [pickerForItemId, setPickerForItemId] = useState(null);
 
     // Cerrar con ESC
     useEffect(() => {
@@ -76,30 +79,126 @@ export const QuotationDetailModal = ({ quotation, onClose, onUpdate, autoSend = 
         );
     };
 
+    const handleAddItem = () => {
+        if (!isEditable) return;
+        setHasChanges(true);
+        const newItem = {
+            id: `new-${Date.now()}`,
+            quotationId: quotation.id,
+            product: '',
+            quantity: 1,
+            unitPrice: 0,
+            shippingCost: 0,
+            totalPrice: 0,
+            inventoryItemId: null,
+            inventoryItem: null
+        };
+        setItems(prev => [...prev, newItem]);
+    };
+
+    const handleRemoveItem = (itemId) => {
+        if (!isEditable) return;
+        if (items.length <= 1) {
+            showToast('⚠️ La cotización debe tener al menos un item', 'warning');
+            return;
+        }
+        setHasChanges(true);
+        setItems(prev => prev.filter(item => item.id !== itemId));
+    };
+
+    // Selección desde el picker de inventario (solo para items nuevos)
+    const handleInventorySelect = (inventoryItem) => {
+        if (!pickerForItemId) return;
+
+        const parts = [inventoryItem.tipo, inventoryItem.material, inventoryItem.modelo, inventoryItem.size, inventoryItem.color]
+            .filter(Boolean);
+        const description = parts.length > 0 ? parts.join(' - ') : inventoryItem.itemNumber;
+
+        setItems(prevItems =>
+            prevItems.map(item =>
+                item.id === pickerForItemId
+                    ? {
+                        ...item,
+                        product: description,
+                        unitPrice: inventoryItem.unit_price,
+                        inventoryItemId: inventoryItem.id,
+                        inventoryItem: inventoryItem,
+                        totalPrice: (item.quantity || 1) * inventoryItem.unit_price
+                    }
+                    : item
+            )
+        );
+        setHasChanges(true);
+        setPickerForItemId(null);
+    };
+
     const handleSaveChanges = async () => {
+        // Validar que todos los items tengan descripción
+        const emptyItems = items.filter(item => !item.product || !item.product.trim());
+        if (emptyItems.length > 0) {
+            showToast('⚠️ Todos los items deben tener una descripción', 'warning');
+            return;
+        }
+
         setIsLoading(true);
         try {
-            // Update items
-            const updatePromises = items.map(async (item) => {
+            // Identificar items nuevos vs existentes
+            const existingItems = items.filter(item => !String(item.id).startsWith('new-'));
+            const newItems = items.filter(item => String(item.id).startsWith('new-'));
+
+            // Identificar items eliminados (estaban en original pero ya no están)
+            const currentIds = items.map(item => item.id);
+            const deletedItems = (quotation.items || []).filter(item => !currentIds.includes(item.id));
+
+            // 1. Eliminar items borrados
+            for (const delItem of deletedItems) {
+                await supabase
+                    .from('quotation_items')
+                    .delete()
+                    .eq('id', delItem.id);
+            }
+
+            // 2. Actualizar items existentes que cambiaron
+            const updatePromises = existingItems.map(async (item) => {
                 const originalItem = quotation.items.find(o => o.id === item.id);
                 if (!originalItem) return null;
 
                 const hasChanged =
                     originalItem.quantity !== item.quantity ||
                     originalItem.unitPrice !== item.unitPrice ||
-                    originalItem.shippingCost !== item.shippingCost;
+                    originalItem.shippingCost !== item.shippingCost ||
+                    originalItem.product !== item.product;
 
                 if (hasChanged) {
                     return await QuotationService.updateQuotationItem(item.id, {
                         quantity: item.quantity,
                         unitPrice: item.unitPrice,
-                        shippingCost: item.shippingCost
+                        shippingCost: item.shippingCost,
+                        product: item.product
                     });
                 }
                 return null;
             });
 
             await Promise.all(updatePromises);
+
+            // 3. Insertar items nuevos
+            if (newItems.length > 0) {
+                const itemsToInsert = newItems.map(item => ({
+                    quotation_id: quotation.id,
+                    product: item.product,
+                    quantity: item.quantity,
+                    unit_price: item.unitPrice,
+                    shipping_cost: item.shippingCost || 0,
+                    inventory_item_id: item.inventoryItemId || null
+                }));
+
+                const { error: insertError } = await supabase
+                    .from('quotation_items')
+                    .insert(itemsToInsert);
+
+                if (insertError) throw insertError;
+            }
 
             // Update Quotation Header (advance payment)
             if (quotation.advancePayment !== advancePayment) {
@@ -406,9 +505,20 @@ export const QuotationDetailModal = ({ quotation, onClose, onUpdate, autoSend = 
 
                         {/* Items */}
                         <div className="glass-panel" style={{ padding: '1.5rem' }}>
-                            <h3 style={{ margin: '0 0 1rem 0', fontSize: '1.1rem', fontWeight: '600', color: 'var(--primary-color)', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                                Productos
-                            </h3>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '600', color: 'var(--primary-color)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                    Productos
+                                </h3>
+                                {isEditable && (
+                                    <button
+                                        className="btn btn-primary"
+                                        onClick={handleAddItem}
+                                        style={{ padding: '0.3rem 0.8rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+                                    >
+                                        <Plus size={16} /> Agregar Item
+                                    </button>
+                                )}
+                            </div>
 
                             {/* Campo de Adelanto Global */}
                             <div style={{
@@ -510,9 +620,61 @@ export const QuotationDetailModal = ({ quotation, onClose, onUpdate, autoSend = 
                                             </div>
                                             <div className="filter-group">
                                                 <label className="input-label hide-on-desktop">Descripción</label>
-                                                <div className="input-field" style={{ background: 'var(--bg-tertiary)', fontWeight: '600', display: 'flex', alignItems: 'center' }}>
-                                                    {item.product}
-                                                </div>
+                                                {isEditable ? (
+                                                    <>
+                                                        <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                                                            <input
+                                                                type="text"
+                                                                value={item.product}
+                                                                onChange={(e) => handleItemChange(item.id, 'product', e.target.value)}
+                                                                className="input-field"
+                                                                placeholder="Descripción del producto"
+                                                                style={{ flex: 1, fontWeight: '600' }}
+                                                            />
+                                                            {/* Lupa solo para items nuevos (sin inventoryItem ya vinculado) */}
+                                                            {!item.inventoryItem && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setPickerForItemId(item.id)}
+                                                                    className="btn-icon"
+                                                                    title="Buscar en inventario"
+                                                                    style={{
+                                                                        flexShrink: 0,
+                                                                        background: item.inventoryItemId ? 'var(--primary-light)' : 'var(--bg-tertiary)',
+                                                                        border: `1px solid ${item.inventoryItemId ? 'var(--primary-color)' : 'var(--border-color)'}`,
+                                                                        color: item.inventoryItemId ? 'var(--primary-color)' : 'var(--text-muted)',
+                                                                        padding: '0.55rem',
+                                                                        borderRadius: '8px'
+                                                                    }}
+                                                                >
+                                                                    <Search size={15} />
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                        {/* Badge del item de inventario vinculado */}
+                                                        {item.inventoryItem && (
+                                                            <div style={{
+                                                                marginTop: '0.3rem',
+                                                                display: 'inline-flex',
+                                                                alignItems: 'center',
+                                                                gap: '0.3rem',
+                                                                padding: '0.2rem 0.5rem',
+                                                                background: 'var(--primary-light)',
+                                                                border: '1px solid var(--primary-color)',
+                                                                borderRadius: '4px',
+                                                                fontSize: '0.72rem',
+                                                                color: 'var(--primary-color)',
+                                                                fontWeight: '600'
+                                                            }}>
+                                                                📦 {item.inventoryItem.itemNumber}
+                                                            </div>
+                                                        )}
+                                                    </>
+                                                ) : (
+                                                    <div className="input-field" style={{ background: 'var(--bg-tertiary)', fontWeight: '600', display: 'flex', alignItems: 'center' }}>
+                                                        {item.product}
+                                                    </div>
+                                                )}
                                             </div>
                                             <div className="filter-group">
                                                 <label className="input-label hide-on-desktop">P. Unit. (S/)</label>
@@ -538,7 +700,7 @@ export const QuotationDetailModal = ({ quotation, onClose, onUpdate, autoSend = 
                                                     height: '48px',
                                                     display: 'flex',
                                                     alignItems: 'center',
-                                                    justifyContent: 'flex-end',
+                                                    justifyContent: 'space-between',
                                                     fontWeight: '700',
                                                     fontSize: '1rem',
                                                     color: 'var(--primary-color)',
@@ -547,7 +709,17 @@ export const QuotationDetailModal = ({ quotation, onClose, onUpdate, autoSend = 
                                                     borderRadius: '8px',
                                                     border: '1px solid var(--border-color)'
                                                 }}>
-                                                    {((item.quantity * item.unitPrice) + (item.shippingCost || 0)).toFixed(2)}
+                                                    <span>{((item.quantity * item.unitPrice) + (item.shippingCost || 0)).toFixed(2)}</span>
+                                                    {isEditable && (
+                                                        <button
+                                                            onClick={() => handleRemoveItem(item.id)}
+                                                            className="btn-icon"
+                                                            title="Eliminar item"
+                                                            style={{ color: '#c62828', padding: '0.3rem', borderRadius: '6px', border: '1px solid #ffcdd2', background: '#ffebee', marginLeft: '0.5rem' }}
+                                                        >
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -686,6 +858,14 @@ export const QuotationDetailModal = ({ quotation, onClose, onUpdate, autoSend = 
                 onConfirm={handleReject}
                 quotationNumber={quotation.quotationNumber}
             />
+
+            {/* Picker de inventario */}
+            {pickerForItemId && (
+                <InventoryPickerModal
+                    onClose={() => setPickerForItemId(null)}
+                    onSelect={handleInventorySelect}
+                />
+            )}
         </>
     );
 };
