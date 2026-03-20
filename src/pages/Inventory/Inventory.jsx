@@ -97,16 +97,7 @@ export const Inventory = () => {
     return (
         <div className="main-content">
             {/* Header */}
-            <header style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-                <div>
-                    <h1 className="dashboard-title">
-                        Inventario
-                    </h1>
-                    <p style={{ margin: '0.5rem 0 0 0', color: 'var(--text-muted)', fontSize: '0.95rem' }}>
-                        Gestiona el stock de tus productos
-                    </p>
-                </div>
-
+            <header style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
                 <button onClick={() => setShowAddModal(true)} className="btn btn-primary">
                     <Plus size={18} />
                     <span>Agregar Item</span>

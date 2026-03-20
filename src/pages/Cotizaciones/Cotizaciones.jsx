@@ -148,11 +148,7 @@ export const Cotizaciones = () => {
 
     return (
         <div className="main-content">
-            <header style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-                <h1 className="dashboard-title" style={{ margin: 0 }}>
-                    Cotizaciones
-                </h1>
-
+            <header style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
                 <button
                     onClick={() => setIsNewQuotationModalOpen(true)}
                     className="btn btn-primary"

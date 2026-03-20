@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { OrderService } from '../../services';
-import { ShoppingBag, Calendar, User, ChevronRight, Wallet, Plus } from 'lucide-react';
+import { ShoppingBag, Calendar, Wallet, Plus, Eye, Settings, ChevronLeft, ChevronRight } from 'lucide-react';
 import { OrderDetailsModal } from '../../components/Order/OrderDetailsModal';
 import { NewOrderModal } from '../../components/Order/NewOrderModal';
 
@@ -15,6 +15,29 @@ export const Dashboard = () => {
         endDate: ''
     });
     const [isLoading, setIsLoading] = useState(true);
+
+    // Pagination (client-side)
+    const [pagination, setPagination] = useState({
+        page: 1,
+        limit: 10
+    });
+
+    // Sorting
+    const [sorting, setSorting] = useState({
+        field: 'orderNumber',
+        order: 'desc'
+    });
+
+    // Column visibility
+    const [visibleColumns, setVisibleColumns] = useState({
+        orderNumber: true,
+        customerName: true,
+        deliveryDate: true,
+        status: true,
+        itemsCount: true,
+        totalBalance: true
+    });
+    const [showColumnSettings, setShowColumnSettings] = useState(false);
 
     useEffect(() => {
         loadOrders();
@@ -36,27 +59,29 @@ export const Dashboard = () => {
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
         setFilters(prev => ({ ...prev, [name]: value }));
+        setPagination(prev => ({ ...prev, page: 1 }));
     };
 
+    const clearFilters = () => {
+        setFilters({ search: '', status: '', startDate: '', endDate: '' });
+        setPagination(prev => ({ ...prev, page: 1 }));
+    };
+
+    // Filter logic
     const filteredOrders = orders.filter(order => {
         const matchSearch = (order.customerName || '').toLowerCase().includes(filters.search.toLowerCase()) ||
             (order.orderNumber || '').toLowerCase().includes(filters.search.toLowerCase());
 
-        // Lógica de filtrado por estado
         let matchStatus;
         if (filters.status === '') {
             matchStatus = true;
         } else if (filters.status === 'Entregado') {
-            // "Entregado": estado Terminado, con entrega marcada, pero pendiente de pago
             matchStatus = order.status === 'Terminado' && order.isDelivered === true && order.isPaid === false;
         } else if (filters.status === 'Cerrado y Pagado') {
-            // "Cerrado y Pagado": tiene ambos checks
             matchStatus = order.isDelivered === true && order.isPaid === true;
         } else if (filters.status === 'En Proceso') {
-            // "En Proceso" puro: sin entrega ni pago marcado, y estado es En Proceso
             matchStatus = order.status === 'En Proceso' && !order.isDelivered && !order.isPaid;
         } else if (filters.status === 'Terminado') {
-            // "Terminado": estado Terminado, sin marca de entregado ni pagado
             matchStatus = order.status === 'Terminado' && !order.isDelivered && !order.isPaid;
         } else if (filters.status === 'Recibido') {
             matchStatus = order.status === 'Recibido' && !order.isDelivered && !order.isPaid;
@@ -73,6 +98,37 @@ export const Dashboard = () => {
         return matchSearch && matchStatus && matchStart && matchEnd;
     });
 
+    // Sorting
+    const sortedOrders = [...filteredOrders].sort((a, b) => {
+        const field = sorting.field;
+        let aVal = a[field];
+        let bVal = b[field];
+
+        if (field === 'itemsCount') {
+            aVal = a.items?.length || 0;
+            bVal = b.items?.length || 0;
+        }
+        if (field === 'deliveryDate') {
+            aVal = aVal ? new Date(aVal).getTime() : 0;
+            bVal = bVal ? new Date(bVal).getTime() : 0;
+        }
+        if (typeof aVal === 'string') {
+            aVal = aVal.toLowerCase();
+            bVal = (bVal || '').toLowerCase();
+        }
+
+        if (aVal < bVal) return sorting.order === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sorting.order === 'asc' ? 1 : -1;
+        return 0;
+    });
+
+    // Pagination
+    const totalPages = Math.ceil(sortedOrders.length / pagination.limit);
+    const paginatedOrders = sortedOrders.slice(
+        (pagination.page - 1) * pagination.limit,
+        pagination.page * pagination.limit
+    );
+
     const totalAmountFiltered = filteredOrders.reduce((sum, order) => sum + (order.totalBalance || 0), 0);
     const isFiltered = filters.search !== '' || filters.status !== '' || filters.startDate !== '' || filters.endDate !== '';
 
@@ -86,47 +142,98 @@ export const Dashboard = () => {
         }
     };
 
+    const getDisplayStatus = (order) => {
+        if (order.isDelivered && order.isPaid) return 'Cerrado y Pagado';
+        if (order.status === 'Terminado' && order.isDelivered) return 'Entregado';
+        return order.status;
+    };
+
+    const handleSort = (field) => {
+        setSorting(prev => ({
+            field,
+            order: prev.field === field && prev.order === 'asc' ? 'desc' : 'asc'
+        }));
+    };
+
+    const getSortIcon = (field) => {
+        if (sorting.field !== field) return '⇅';
+        return sorting.order === 'asc' ? '↑' : '↓';
+    };
+
+    const handlePageChange = (newPage) => {
+        if (newPage >= 1 && newPage <= totalPages) {
+            setPagination(prev => ({ ...prev, page: newPage }));
+        }
+    };
+
+    const handleLimitChange = (e) => {
+        setPagination({ limit: parseInt(e.target.value), page: 1 });
+    };
+
+    const toggleColumn = (column) => {
+        setVisibleColumns(prev => ({ ...prev, [column]: !prev[column] }));
+    };
+
     const handleNewOrderCreated = (newOrder) => {
         setOrders(prev => [newOrder, ...prev]);
     };
 
+    const formatDate = (dateString) => {
+        if (!dateString) return '-';
+        try {
+            if (dateString.includes('T')) {
+                const date = new Date(dateString);
+                return isNaN(date.getTime()) ? dateString : date.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            }
+            const [year, month, day] = dateString.split('-');
+            return `${day}/${month}/${year}`;
+        } catch (e) {
+            return dateString;
+        }
+    };
+
+    const columnLabels = {
+        orderNumber: '# Pedido',
+        customerName: 'Cliente',
+        deliveryDate: 'F. Entrega',
+        status: 'Estado',
+        itemsCount: 'Items',
+        totalBalance: 'Saldo'
+    };
+
     return (
         <div className="main-content">
-            <header style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-                <h1 className="dashboard-title">
-                    Tablero de pedidos
-                </h1>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-                    <button
-                        onClick={() => setIsNewOrderModalOpen(true)}
-                        className="btn btn-primary"
-                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-                    >
-                        <Plus size={20} />
-                        Nuevo Pedido
-                    </button>
-
-                    <div className="glass-panel" style={{ padding: '0.6rem 2rem', display: 'flex', gap: '2rem' }}>
-                        <div style={{ textAlign: 'center' }}>
-                            <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Total</span>
-                            <span style={{ fontWeight: '800', fontSize: '1.4rem' }}>{filteredOrders.length}</span>
+            {/* Header */}
+            <header className="page-header">
+                <div className="page-header-left">
+                    <div className="glass-panel stats-inline">
+                        <div className="stat-item">
+                            <span className="stat-item-label">Total</span>
+                            <span className="stat-item-value">{filteredOrders.length}</span>
                         </div>
-                        <div style={{ textAlign: 'center' }}>
-                            <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Pendientes</span>
-                            <span style={{ fontWeight: '800', fontSize: '1.4rem', color: 'var(--warning-color)' }}>
+                        <div className="stat-divider" />
+                        <div className="stat-item">
+                            <span className="stat-item-label">Pendientes</span>
+                            <span className="stat-item-value" style={{ color: 'var(--warning-color)' }}>
                                 {filteredOrders.filter(o => o.status !== 'Cerrado' && o.status !== 'Cerrado y Pagado').length}
                             </span>
                         </div>
                     </div>
                 </div>
+                <button
+                    onClick={() => setIsNewOrderModalOpen(true)}
+                    className="btn btn-primary"
+                >
+                    <Plus size={18} />
+                    <span>Nuevo Pedido</span>
+                </button>
             </header>
 
-            {/* FILTROS CON CLASE CSS ROBUSTA */}
-            <div className="glass-panel" style={{ padding: '2rem', marginBottom: '2rem' }}>
+            {/* Filtros */}
+            <div className="glass-panel filter-panel">
                 <div className="search-filter-grid">
                     <div className="filter-group">
-                        <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>Buscar Pedido</label>
+                        <label>Buscar Pedido</label>
                         <input
                             type="text"
                             name="search"
@@ -138,7 +245,7 @@ export const Dashboard = () => {
                     </div>
 
                     <div className="filter-group">
-                        <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>Estado Actual</label>
+                        <label>Estado Actual</label>
                         <select
                             name="status"
                             className="input-field"
@@ -155,13 +262,12 @@ export const Dashboard = () => {
                     </div>
 
                     <div className="filter-group">
-                        <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>Rango de Fechas</label>
+                        <label>Rango de Fechas</label>
                         <div className="date-range-group">
                             <input
                                 type="date"
                                 name="startDate"
                                 className="input-field"
-                                placeholder="Desde"
                                 value={filters.startDate}
                                 onChange={handleFilterChange}
                             />
@@ -169,23 +275,19 @@ export const Dashboard = () => {
                                 type="date"
                                 name="endDate"
                                 className="input-field"
-                                placeholder="Hasta"
                                 value={filters.endDate}
                                 onChange={handleFilterChange}
                             />
                         </div>
                     </div>
 
-                    <button
-                        onClick={() => setFilters({ search: '', status: '', startDate: '', endDate: '' })}
-                        className="btn btn-secondary"
-                        style={{ height: '48px', width: '100%' }}
-                    >
-                        Limpiar Filtros
+                    <button onClick={clearFilters} className="btn btn-secondary" style={{ height: '42px', width: '100%' }}>
+                        Limpiar
                     </button>
                 </div>
             </div>
 
+            {/* Banner de acumulado */}
             {isFiltered && filteredOrders.length > 0 && (
                 <div className="disclaimer-banner">
                     <div className="disclaimer-content">
@@ -193,7 +295,7 @@ export const Dashboard = () => {
                             <Wallet size={24} />
                         </div>
                         <div>
-                            <h4 style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                            <h4 style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>
                                 Saldo Pendiente Acumulado (Filtro)
                             </h4>
                             <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
@@ -208,88 +310,237 @@ export const Dashboard = () => {
                 </div>
             )}
 
-            <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
-                {filteredOrders.map(order => (
-                    <div
-                        key={order.id}
-                        className="glass-panel order-card ripple"
-                        onClick={() => setSelectedOrder(order)}
-                        style={{ cursor: 'pointer', transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)', padding: '1.5rem' }}
+            {/* Pagination controls top */}
+            <div className="pagination-bar">
+                <div className="pagination-bar-left">
+                    <span className="pagination-info">Items por página:</span>
+                    <select
+                        className="input-field pagination-select"
+                        value={pagination.limit}
+                        onChange={handleLimitChange}
                     >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.2rem' }}>
-                            <div>
-                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase', letterSpacing: '1.5px', fontWeight: '700' }}>
-                                    {order.orderNumber}
-                                </span>
-                                <h3 style={{ margin: '6px 0', fontSize: '1.2rem', fontWeight: '700' }}>{order.customerName}</h3>
-                            </div>
-                            <span style={{
-                                padding: '6px 12px',
-                                borderRadius: '30px',
-                                fontSize: '0.7rem',
-                                fontWeight: '800',
-                                textTransform: 'uppercase',
-                                backgroundColor: `${getStatusColor(order.status)}15`,
-                                color: getStatusColor(order.status),
-                                border: `1px solid ${getStatusColor(order.status)}30`
-                            }}>
-                                {(order.status === 'Cerrado' || order.status === 'Cerrado y Pagado') ? 'Cerrado y Pagado' : order.status}
-                            </span>
-                        </div>
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={20}>20</option>
+                        <option value={50}>50</option>
+                    </select>
+                </div>
 
-                        <div style={{ display: 'grid', gap: '1rem', fontSize: '0.9rem' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-muted)' }}>
-                                <Calendar size={16} />
-                                <span>Entrega: <strong style={{ color: 'var(--text-color)' }}>
-                                    {(() => {
-                                        if (!order.deliveryDate) return 'No especificada';
-                                        try {
-                                            const date = new Date(order.deliveryDate);
-                                            // Usar split para evitar problemas con zonas horarias si solo es fecha YYYY-MM-DD
-                                            if (order.deliveryDate.includes('T')) {
-                                                return isNaN(date.getTime()) ? order.deliveryDate : date.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
-                                            }
-                                            const [year, month, day] = order.deliveryDate.split('-');
-                                            return `${day}/${month}/${year}`;
-                                        } catch (e) {
-                                            return order.deliveryDate;
-                                        }
-                                    })()}
-                                </strong></span>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.8rem', paddingTop: '1rem', borderTop: '1px solid var(--glass-border)' }}>
-                                <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-                                    {order.items?.length || 0} items registrados
-                                </div>
-                                <div style={{ fontWeight: '800', fontSize: '1.3rem', color: order.totalBalance > 0 ? 'var(--primary-color)' : 'var(--success-color)' }}>
-                                    S/ {(order.totalBalance || 0).toFixed(2)}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="card-footer" style={{
-                            marginTop: '1.2rem',
-                            display: 'flex',
-                            justifyContent: 'flex-end',
-                            color: 'var(--primary-color)',
-                            fontSize: '0.85rem',
-                            fontWeight: '600',
-                            gap: '4px',
-                            alignItems: 'center'
-                        }}>
-                            Gestionar pedido <ChevronRight size={18} />
-                        </div>
+                {totalPages > 1 && (
+                    <div className="pagination-controls">
+                        <button
+                            onClick={() => handlePageChange(pagination.page - 1)}
+                            disabled={pagination.page === 1}
+                            className="btn btn-secondary btn-sm"
+                        >
+                            Anterior
+                        </button>
+                        <span className="pagination-info">
+                            Página {pagination.page} de {totalPages}
+                        </span>
+                        <button
+                            onClick={() => handlePageChange(pagination.page + 1)}
+                            disabled={pagination.page === totalPages}
+                            className="btn btn-secondary btn-sm"
+                        >
+                            Siguiente
+                        </button>
                     </div>
-                ))}
+                )}
             </div>
 
-            {filteredOrders.length === 0 && (
-                <div style={{ textAlign: 'center', padding: '6rem', color: 'var(--text-muted)' }}>
-                    <ShoppingBag size={64} style={{ marginBottom: '1.5rem', opacity: 0.1 }} />
-                    <p style={{ fontSize: '1.1rem' }}>No hay pedidos que coincidan con tu búsqueda.</p>
+            {/* Data Table - Desktop */}
+            <div className="glass-panel data-panel">
+                {/* Column selector */}
+                <div className="table-toolbar">
+                    <span className="table-toolbar-info">
+                        {filteredOrders.length} registro{filteredOrders.length !== 1 ? 's' : ''}
+                    </span>
+                    <div style={{ position: 'relative' }}>
+                        <button
+                            onClick={() => setShowColumnSettings(!showColumnSettings)}
+                            className="btn btn-secondary btn-sm"
+                            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                        >
+                            <Settings size={16} />
+                            <span className="hide-on-mobile">Columnas</span>
+                        </button>
+
+                        {showColumnSettings && (
+                            <div className="column-dropdown glass-panel">
+                                <p className="column-dropdown-title">Columnas visibles</p>
+                                {Object.entries(visibleColumns).map(([key, value]) => (
+                                    <label key={key} className="column-toggle-label">
+                                        <input
+                                            type="checkbox"
+                                            checked={value}
+                                            onChange={() => toggleColumn(key)}
+                                            style={{ accentColor: 'var(--primary-color)' }}
+                                        />
+                                        <span>{columnLabels[key]}</span>
+                                    </label>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Table */}
+                <div className="dashboard-table-container">
+                    <div style={{ overflowX: 'auto' }}>
+                        <table className="data-table">
+                            <thead>
+                                <tr>
+                                    {visibleColumns.orderNumber && (
+                                        <th onClick={() => handleSort('orderNumber')} style={{ cursor: 'pointer' }}>
+                                            <div className="th-content"># Pedido {getSortIcon('orderNumber')}</div>
+                                        </th>
+                                    )}
+                                    {visibleColumns.customerName && (
+                                        <th onClick={() => handleSort('customerName')} style={{ cursor: 'pointer' }}>
+                                            <div className="th-content">Cliente {getSortIcon('customerName')}</div>
+                                        </th>
+                                    )}
+                                    {visibleColumns.deliveryDate && (
+                                        <th onClick={() => handleSort('deliveryDate')} style={{ cursor: 'pointer' }}>
+                                            <div className="th-content">F. Entrega {getSortIcon('deliveryDate')}</div>
+                                        </th>
+                                    )}
+                                    {visibleColumns.status && (
+                                        <th>Estado</th>
+                                    )}
+                                    {visibleColumns.itemsCount && (
+                                        <th onClick={() => handleSort('itemsCount')} style={{ cursor: 'pointer', textAlign: 'center' }}>
+                                            <div className="th-content" style={{ justifyContent: 'center' }}>Items {getSortIcon('itemsCount')}</div>
+                                        </th>
+                                    )}
+                                    {visibleColumns.totalBalance && (
+                                        <th onClick={() => handleSort('totalBalance')} style={{ cursor: 'pointer', textAlign: 'right' }}>
+                                            <div className="th-content" style={{ justifyContent: 'flex-end' }}>Saldo {getSortIcon('totalBalance')}</div>
+                                        </th>
+                                    )}
+                                    <th style={{ textAlign: 'center', width: '80px' }}>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {paginatedOrders.map(order => {
+                                    const displayStatus = getDisplayStatus(order);
+                                    const statusColor = getStatusColor(displayStatus);
+                                    return (
+                                        <tr key={order.id} className="data-table-row-clickable" onClick={() => setSelectedOrder(order)}>
+                                            {visibleColumns.orderNumber && (
+                                                <td>
+                                                    <span className="order-number-cell">{order.orderNumber}</span>
+                                                </td>
+                                            )}
+                                            {visibleColumns.customerName && (
+                                                <td style={{ fontWeight: '600' }}>{order.customerName}</td>
+                                            )}
+                                            {visibleColumns.deliveryDate && (
+                                                <td>{formatDate(order.deliveryDate)}</td>
+                                            )}
+                                            {visibleColumns.status && (
+                                                <td>
+                                                    <span className="status-pill" style={{
+                                                        backgroundColor: `${statusColor}15`,
+                                                        color: statusColor,
+                                                        border: `1px solid ${statusColor}30`
+                                                    }}>
+                                                        {displayStatus}
+                                                    </span>
+                                                </td>
+                                            )}
+                                            {visibleColumns.itemsCount && (
+                                                <td style={{ textAlign: 'center' }}>
+                                                    <span className="items-count-badge">{order.items?.length || 0}</span>
+                                                </td>
+                                            )}
+                                            {visibleColumns.totalBalance && (
+                                                <td style={{ textAlign: 'right', fontWeight: '700', color: order.totalBalance > 0 ? 'var(--primary-color)' : 'var(--success-color)' }}>
+                                                    S/ {(order.totalBalance || 0).toFixed(2)}
+                                                </td>
+                                            )}
+                                            <td style={{ textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
+                                                <button
+                                                    onClick={() => setSelectedOrder(order)}
+                                                    className="btn-icon"
+                                                    title="Ver detalle"
+                                                    style={{ color: 'var(--primary-color)' }}
+                                                >
+                                                    <Eye size={18} />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                {/* Mobile Cards */}
+                <div className="dashboard-cards-container">
+                    {paginatedOrders.map(order => {
+                        const displayStatus = getDisplayStatus(order);
+                        const statusColor = getStatusColor(displayStatus);
+                        return (
+                            <div key={order.id} className="dashboard-card" onClick={() => setSelectedOrder(order)}>
+                                <div className="dashboard-card-header">
+                                    <div>
+                                        <span className="dashboard-card-number">{order.orderNumber}</span>
+                                        <h3 className="dashboard-card-name">{order.customerName}</h3>
+                                    </div>
+                                    <span className="status-pill" style={{
+                                        backgroundColor: `${statusColor}15`,
+                                        color: statusColor,
+                                        border: `1px solid ${statusColor}30`
+                                    }}>
+                                        {displayStatus}
+                                    </span>
+                                </div>
+                                <div className="dashboard-card-body">
+                                    <div>
+                                        <span className="dashboard-card-label">Entrega</span>
+                                        <span>{formatDate(order.deliveryDate)}</span>
+                                    </div>
+                                    <div>
+                                        <span className="dashboard-card-label">Items</span>
+                                        <span>{order.items?.length || 0}</span>
+                                    </div>
+                                    <div>
+                                        <span className="dashboard-card-label">Saldo</span>
+                                        <span style={{ fontWeight: '700', color: order.totalBalance > 0 ? 'var(--primary-color)' : 'var(--success-color)' }}>
+                                            S/ {(order.totalBalance || 0).toFixed(2)}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+
+                {filteredOrders.length === 0 && !isLoading && (
+                    <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-muted)' }}>
+                        <ShoppingBag size={48} style={{ marginBottom: '1rem', opacity: 0.15 }} />
+                        <p>No hay pedidos que coincidan con tu búsqueda.</p>
+                    </div>
+                )}
+            </div>
+
+            {/* Pagination bottom */}
+            {totalPages > 1 && (
+                <div className="pagination-controls" style={{ marginTop: '1.5rem', justifyContent: 'center' }}>
+                    <button onClick={() => handlePageChange(pagination.page - 1)} disabled={pagination.page === 1} className="btn btn-secondary btn-sm">
+                        Anterior
+                    </button>
+                    <span className="pagination-info">Página {pagination.page} de {totalPages}</span>
+                    <button onClick={() => handlePageChange(pagination.page + 1)} disabled={pagination.page === totalPages} className="btn btn-secondary btn-sm">
+                        Siguiente
+                    </button>
                 </div>
             )}
 
+            {/* Modals */}
             {selectedOrder && (
                 <OrderDetailsModal
                     order={selectedOrder}

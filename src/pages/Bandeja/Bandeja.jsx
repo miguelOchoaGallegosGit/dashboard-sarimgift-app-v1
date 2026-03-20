@@ -110,11 +110,7 @@ export const Bandeja = () => {
 
     return (
         <div className="main-content">
-            <header style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-                <h1 className="dashboard-title" style={{ margin: 0 }}>
-                    Bandeja de Pedidos
-                </h1>
-            </header>
+
 
             {/* Filtros */}
             <div className="glass-panel" style={{ padding: '1.5rem', marginBottom: '2rem' }}>
